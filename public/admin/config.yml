@@ -3,6 +3,10 @@ backend:
   repo: setyawanadi-design/mailto-setyawanadi
   branch: main
 
+# Use Netlify Identity for authentication
+site_url: https://setyawanadi.netlify.app
+auth_endpoint: /auth
+
 media_folder: public/media
 public_folder: /media
 

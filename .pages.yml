@@ -1,0 +1,137 @@
+media:
+  input: public/media
+  output: /media
+
+content:
+  - name: inbox
+    label: Inbox
+    type: collection
+    path: src/content/inbox
+    format: yaml-frontmatter
+    fields:
+      - { name: title, label: Title, type: string, required: true }
+      - { name: from, label: From, type: string, required: true }
+      - { name: fromEmail, label: From Email, type: string, required: true }
+      - { name: date, label: Date, type: date, required: true }
+      - { name: preview, label: Preview, type: text, required: true }
+      - { name: pinned, label: Pinned, type: boolean }
+      - name: attachments
+        label: Attachments
+        type: object
+        list: true
+        fields:
+          - { name: name, label: Name, type: string }
+          - { name: url, label: URL, type: string }
+          - { name: size, label: Size, type: string }
+    view:
+      fields: [title, date]
+      primary: title
+      sort: [date]
+
+  - name: sent
+    label: Sent
+    type: collection
+    path: src/content/sent
+    format: yaml-frontmatter
+    fields:
+      - { name: title, label: Title, type: string, required: true }
+      - { name: from, label: From, type: string, required: true }
+      - { name: fromEmail, label: From Email, type: string, required: true }
+      - { name: date, label: Date, type: date, required: true }
+      - { name: preview, label: Preview, type: text, required: true }
+      - { name: pinned, label: Pinned, type: boolean }
+      - name: attachments
+        label: Attachments
+        type: object
+        list: true
+        fields:
+          - { name: name, label: Name, type: string }
+          - { name: url, label: URL, type: string }
+          - { name: size, label: Size, type: string }
+    view:
+      fields: [title, date]
+      primary: title
+      sort: [date]
+
+  - name: drafts
+    label: Drafts
+    type: collection
+    path: src/content/drafts
+    format: yaml-frontmatter
+    fields:
+      - { name: title, label: Title, type: string, required: true }
+      - { name: from, label: From, type: string, required: true }
+      - { name: fromEmail, label: From Email, type: string, required: true }
+      - { name: date, label: Date, type: date, required: true }
+      - { name: preview, label: Preview, type: text, required: true }
+      - { name: pinned, label: Pinned, type: boolean }
+    view:
+      fields: [title, date]
+      primary: title
+      sort: [date]
+
+  - name: notes
+    label: Notes
+    type: collection
+    path: src/content/notes
+    format: yaml-frontmatter
+    fields:
+      - { name: title, label: Title, type: string, required: true }
+      - { name: from, label: From, type: string, required: true }
+      - { name: fromEmail, label: From Email, type: string, required: true }
+      - { name: date, label: Date, type: date, required: true }
+      - { name: preview, label: Preview, type: text, required: true }
+      - { name: pinned, label: Pinned, type: boolean }
+    view:
+      fields: [title, date]
+      primary: title
+      sort: [date]
+
+  - name: archive
+    label: Archive
+    type: collection
+    path: src/content/archive
+    format: yaml-frontmatter
+    fields:
+      - { name: title, label: Title, type: string, required: true }
+      - { name: from, label: From, type: string, required: true }
+      - { name: fromEmail, label: From Email, type: string, required: true }
+      - { name: date, label: Date, type: date, required: true }
+      - { name: preview, label: Preview, type: text, required: true }
+      - { name: pinned, label: Pinned, type: boolean }
+    view:
+      fields: [title, date]
+      primary: title
+      sort: [date]
+
+  - name: starred
+    label: Starred
+    type: collection
+    path: src/content/starred
+    format: yaml-frontmatter
+    fields:
+      - { name: title, label: Title, type: string, required: true }
+      - { name: from, label: From, type: string, required: true }
+      - { name: fromEmail, label: From Email, type: string, required: true }
+      - { name: date, label: Date, type: date, required: true }
+      - { name: preview, label: Preview, type: text, required: true }
+      - { name: pinned, label: Pinned, type: boolean }
+    view:
+      fields: [title, date]
+      primary: title
+      sort: [date]
+
+  - name: logs
+    label: Logs
+    type: collection
+    path: src/content/logs
+    format: yaml-frontmatter
+    fields:
+      - { name: title, label: Title, type: string }
+      - { name: date, label: Date, type: date, required: true }
+      - { name: image, label: Image, type: image }
+      - { name: imageAlt, label: Image Alt, type: string }
+    view:
+      fields: [title, date]
+      primary: title
+      sort: [date]

@@ -1,0 +1,16 @@
+---
+import { getCollection } from 'astro:content';
+
+// Redirect to inbox with the first message selected
+const inboxItems = await getCollection('inbox');
+const sorted = inboxItems.sort((a, b) => {
+  if (a.data.pinned && !b.data.pinned) return -1;
+  if (!a.data.pinned && b.data.pinned) return 1;
+  return new Date(b.data.date).getTime() - new Date(a.data.date).getTime();
+});
+
+const firstSlug = sorted.length > 0 ? sorted[0].id : '';
+const redirectUrl = firstSlug ? `/inbox/${firstSlug}` : '/inbox';
+
+return Astro.redirect(redirectUrl);
+---

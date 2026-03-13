@@ -1,0 +1,39 @@
+﻿[2m06.40.14[22m [34m[content][39m Syncing content
+[2m06.40.14[22m [34m[content][39m Synced content
+[2m06.40.14[22m [34m[types][39m Generated [2m1.42s[22m
+[2m06.40.14[22m [34m[build][39m output: [34m"static"[39m
+[2m06.40.14[22m [34m[build][39m mode: [34m"static"[39m
+[2m06.40.14[22m [34m[build][39m directory: [34mC:\Users\setya\project\setyawanadi.design\dist\[39m
+[2m06.40.14[22m [34m[build][39m Collecting build info...
+[2m06.40.14[22m [34m[build][39m [32mΓ£ô Completed in 1.44s.[39m
+[2m06.40.14[22m [34m[build][39m Building static entrypoints...
+[33m[1m06.40.16[22m [WARN] [vite][39m [33m"matchHostname", "matchPathname", "matchPort" and "matchProtocol" are imported from external module "@astrojs/internal-helpers/remote" but never used in "node_modules/astro/dist/assets/utils/index.js".[39m
+[2m06.40.17[22m [34m[vite][39m [32mΓ£ô built in 2.62s[39m
+[2m06.40.17[22m [34m[vite][39m [32mΓ£ô built in 25ms[39m
+[2m06.40.17[22m [34m[build][39m Rearranging server assets...
+
+[42m[30m generating static routes [39m[49m
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/contact/index.html[22m [2m(+40ms)[22m 
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/inbox/on-building-things/index.html[22m [2m(+12ms)[22m 
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/inbox/welcome/index.html[22m [2m(+20ms)[22m 
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/inbox/why-email-client/index.html[22m [2m(+10ms)[22m 
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/sent/operations-manager-application/index.html[22m [2m(+6ms)[22m 
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/sent/portfolio-site/index.html[22m [2m(+5ms)[22m 
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/drafts/workflow-automation/index.html[22m [2m(+5ms)[22m 
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/notes/about-me/index.html[22m [2m(+5ms)[22m 
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/archive/field-operations/index.html[22m [2m(+27ms)[22m 
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/starred/welcome-featured/index.html[22m [2m(+4ms)[22m 
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/inbox/index.html[22m [2m(+5ms)[22m 
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/sent/index.html[22m [2m(+6ms)[22m 
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/drafts/index.html[22m [2m(+6ms)[22m 
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/notes/index.html[22m [2m(+6ms)[22m 
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/archive/index.html[22m [2m(+4ms)[22m 
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/starred/index.html[22m [2m(+9ms)[22m 
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/spam/index.html[22m [2m(+3ms)[22m 
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/trash/index.html[22m [2m(+2ms)[22m 
+[2m06.40.17[22m   [34mΓö£ΓöÇ[39m [2m/index.html[22m [2m(+9ms)[22m 
+[2m06.40.17[22m [32mΓ£ô Completed in 250ms.
+[39m
+[2m06.40.17[22m [34m[build][39m [32mΓ£ô Completed in 3.11s.[39m
+[2m06.40.17[22m [34m[build][39m 19 page(s) built in [1m4.56s[22m
+[2m06.40.17[22m [34m[build][39m [1mComplete![22m

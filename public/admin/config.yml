@@ -1,0 +1,103 @@
+# yaml-language-server: $schema=https://unpkg.com/@sveltia/cms/schema/sveltia-cms.json
+
+backend:
+  name: github
+  repo: setyawanadi/setyawanadi.design
+  branch: main
+
+media_folder: public/media
+public_folder: /media
+
+# Shared field definitions
+_email_fields: &email_fields
+  - { label: Title, name: title, widget: string }
+  - { label: From, name: from, widget: string }
+  - { label: From Email, name: fromEmail, widget: string }
+  - { label: Date, name: date, widget: datetime }
+  - { label: Preview, name: preview, widget: string }
+  - { label: Pinned, name: pinned, widget: boolean, default: false, required: false }
+  - label: Attachments
+    name: attachments
+    widget: list
+    required: false
+    fields:
+      - { label: Name, name: name, widget: string }
+      - { label: URL, name: url, widget: string }
+      - { label: Size, name: size, widget: string }
+  - { label: Body, name: body, widget: markdown }
+
+collections:
+  - name: inbox
+    label: Inbox
+    label_singular: Message
+    folder: src/content/inbox
+    create: true
+    slug: "{{slug}}"
+    extension: md
+    format: frontmatter
+    fields: *email_fields
+
+  - name: sent
+    label: Sent
+    label_singular: Sent Message
+    folder: src/content/sent
+    create: true
+    slug: "{{slug}}"
+    extension: md
+    format: frontmatter
+    fields: *email_fields
+
+  - name: drafts
+    label: Drafts
+    label_singular: Draft
+    folder: src/content/drafts
+    create: true
+    slug: "{{slug}}"
+    extension: md
+    format: frontmatter
+    fields: *email_fields
+
+  - name: notes
+    label: Notes
+    label_singular: Note
+    folder: src/content/notes
+    create: true
+    slug: "{{slug}}"
+    extension: md
+    format: frontmatter
+    fields: *email_fields
+
+  - name: archive
+    label: Archive
+    label_singular: Archived Message
+    folder: src/content/archive
+    create: true
+    slug: "{{slug}}"
+    extension: md
+    format: frontmatter
+    fields: *email_fields
+
+  - name: starred
+    label: Starred
+    label_singular: Starred Message
+    folder: src/content/starred
+    create: true
+    slug: "{{slug}}"
+    extension: md
+    format: frontmatter
+    fields: *email_fields
+
+  - name: logs
+    label: Logs
+    label_singular: Log Entry
+    folder: src/content/logs
+    create: true
+    slug: "{{slug}}"
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: Title, name: title, widget: string, required: false, default: "" }
+      - { label: Date, name: date, widget: datetime }
+      - { label: Image, name: image, widget: image, required: false }
+      - { label: Image Alt, name: imageAlt, widget: string, required: false, default: "" }
+      - { label: Body, name: body, widget: markdown }

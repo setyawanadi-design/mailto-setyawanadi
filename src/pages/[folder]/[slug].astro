@@ -1,0 +1,104 @@
+---
+import { getCollection, render } from 'astro:content';
+import EmailLayout from '../../layouts/EmailLayout.astro';
+import MessageList from '../../components/MessageList.astro';
+import ReadingPane from '../../components/ReadingPane.astro';
+
+const { folder, slug } = Astro.params;
+
+// Map folder names to collection names
+const folderMap: Record<string, { collection: string; label: string }> = {
+  inbox: { collection: 'inbox', label: 'Inbox' },
+  sent: { collection: 'sent', label: 'Sent' },
+  drafts: { collection: 'drafts', label: 'Drafts' },
+  notes: { collection: 'notes', label: 'Notes' },
+  archive: { collection: 'archive', label: 'Archive' },
+  starred: { collection: 'starred', label: 'Starred' },
+};
+
+const folderInfo = folderMap[folder!];
+
+if (!folderInfo) {
+  return Astro.redirect('/inbox');
+}
+
+// Get all items from the collection
+let items: any[] = [];
+try {
+  items = await getCollection(folderInfo.collection as any);
+} catch {
+  items = [];
+}
+
+// Sort items
+const sortedItems = items.sort((a: any, b: any) => {
+  if (a.data.pinned && !b.data.pinned) return -1;
+  if (!a.data.pinned && b.data.pinned) return 1;
+  return new Date(b.data.date).getTime() - new Date(a.data.date).getTime();
+});
+
+// Find selected item and neighbors
+const selectedIndex = sortedItems.findIndex((item: any) => item.id === slug);
+const selectedItem = sortedItems[selectedIndex];
+
+if (!selectedItem) {
+  return Astro.redirect(`/${folder}`);
+}
+
+const prevItem = selectedIndex > 0 ? sortedItems[selectedIndex - 1] : null;
+const nextItem = selectedIndex < sortedItems.length - 1 ? sortedItems[selectedIndex + 1] : null;
+const prevUrl = prevItem ? `/${folder}/${prevItem.id}` : undefined;
+const nextUrl = nextItem ? `/${folder}/${nextItem.id}` : undefined;
+
+const { Content } = await render(selectedItem);
+
+// Generate static paths for all folder/slug combos
+export async function getStaticPaths() {
+  const collections = ['inbox', 'sent', 'drafts', 'notes', 'archive', 'starred'];
+  const paths: { params: { folder: string; slug: string } }[] = [];
+
+  for (const col of collections) {
+    try {
+      const items = await getCollection(col as any);
+      for (const item of items as any[]) {
+        paths.push({
+          params: { folder: col, slug: item.id },
+        });
+      }
+    } catch {
+      // Collection might be empty or not exist
+    }
+  }
+
+  return paths;
+}
+---
+
+<EmailLayout
+  title="setyawanadi"
+  currentFolder={folder!}
+  description={selectedItem.data.title}
+>
+  <MessageList
+    items={sortedItems.map((item: any) => ({
+      slug: item.id,
+      data: item.data,
+    }))}
+    activeSlug={slug!}
+    folderName={folder!}
+    folderLabel={folderInfo.label}
+    basePath={`/${folder}`}
+  />
+
+  <ReadingPane
+    title={selectedItem.data.title}
+    from={selectedItem.data.from}
+    fromEmail={selectedItem.data.fromEmail}
+    date={selectedItem.data.date}
+    attachments={selectedItem.data.attachments}
+    prevUrl={prevUrl}
+    nextUrl={nextUrl}
+  >
+    <Content />
+  </ReadingPane>
+</EmailLayout>

@@ -1,0 +1,137 @@
+---
+import { getCollection, render } from 'astro:content';
+import EmailLayout from '../../layouts/EmailLayout.astro';
+import MessageList from '../../components/MessageList.astro';
+import ReadingPane from '../../components/ReadingPane.astro';
+
+// Get folder from URL
+const { folder } = Astro.params;
+
+// Map folder names to collection names and labels
+const folderMap: Record<string, { collection: string; label: string }> = {
+  inbox: { collection: 'inbox', label: 'Inbox' },
+  sent: { collection: 'sent', label: 'Sent' },
+  drafts: { collection: 'drafts', label: 'Drafts' },
+  notes: { collection: 'notes', label: 'Notes' },
+  archive: { collection: 'archive', label: 'Archive' },
+  starred: { collection: 'starred', label: 'Starred' },
+};
+
+const folderInfo = folderMap[folder!];
+
+if (!folderInfo) {
+  return Astro.redirect('/inbox');
+}
+
+// Get collection items — for spam/trash show empty
+let items: any[] = [];
+if (folder !== 'spam' && folder !== 'trash') {
+  try {
+    items = await getCollection(folderInfo.collection as any);
+  } catch {
+    items = [];
+  }
+}
+
+// Sort: pinned first, then by date desc
+const sortedItems = items.sort((a: any, b: any) => {
+  if (a.data.pinned && !b.data.pinned) return -1;
+  if (!a.data.pinned && b.data.pinned) return 1;
+  return new Date(b.data.date).getTime() - new Date(a.data.date).getTime();
+});
+
+// Select first message
+const firstItem = sortedItems[0];
+const activeSlug = firstItem?.id || '';
+const nextItem = sortedItems.length > 1 ? sortedItems[1] : null;
+const nextUrl = nextItem ? `/${folder}/${nextItem.id}` : undefined;
+
+// Render the first item's content
+let Content: any = null;
+if (firstItem) {
+  const rendered = await render(firstItem);
+  Content = rendered.Content;
+}
+
+export function getStaticPaths() {
+  return [
+    { params: { folder: 'inbox' } },
+    { params: { folder: 'sent' } },
+    { params: { folder: 'drafts' } },
+    { params: { folder: 'notes' } },
+    { params: { folder: 'archive' } },
+    { params: { folder: 'starred' } },
+    { params: { folder: 'spam' } },
+    { params: { folder: 'trash' } },
+  ];
+}
+---
+
+<EmailLayout
+  title="setyawanadi"
+  currentFolder={folder!}
+  description={`${folderInfo.label} — Personal site of Adi Setyawan`}
+>
+  <MessageList
+    items={sortedItems.map((item: any) => ({
+      slug: item.id,
+      data: item.data,
+    }))}
+    activeSlug={activeSlug}
+    folderName={folder!}
+    folderLabel={folderInfo.label}
+    basePath={`/${folder}`}
+  />
+
+  {firstItem && Content ? (
+    <ReadingPane
+      title={firstItem.data.title}
+      from={firstItem.data.from}
+      fromEmail={firstItem.data.fromEmail}
+      date={firstItem.data.date}
+      attachments={firstItem.data.attachments}
+      nextUrl={nextUrl}
+    >
+      <Content />
+    </ReadingPane>
+  ) : (
+    <div class="empty-pane">
+      <div class="empty-pane__content">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.2">
+          <rect x="2" y="4" width="20" height="16" rx="2"/>
+          <path d="M2 7l10 6 10-6"/>
+        </svg>
+        <p>No messages in {folderInfo.label}</p>
+        <span>This folder is empty</span>
+      </div>
+    </div>
+  )}
+</EmailLayout>
+
+<style>
+  .empty-pane {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-detail);
+  }
+
+  .empty-pane__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: #9ca3af;
+  }
+
+  .empty-pane__content p {
+    font-size: 16px;
+    font-weight: 500;
+    color: #6b7280;
+  }
+
+  .empty-pane__content span {
+    font-size: 13px;
+  }
+</style>

@@ -1,0 +1,433 @@
+---
+import { ClientRouter } from "astro:transitions";
+import "../styles/global.css";
+import Toolbar from "../components/Toolbar.astro";
+import Sidebar from "../components/Sidebar.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+  currentFolder?: string;
+  currentSlug?: string;
+}
+
+const {
+  title = "setyawanadi",
+  description = "Personal site of Adi Setyawan — designer, developer, and creative thinker.",
+  currentFolder = "inbox",
+  currentSlug = "",
+} = Astro.props;
+
+const pageTitle = `${currentFolder.charAt(0).toUpperCase() + currentFolder.slice(1)} — ${title}`;
+---
+
+<!doctype html>
+<html lang="en" style="background: linear-gradient(180deg, #e0f2fe 0%, #f0f9ff 40%, #ffffff 100%); background-attachment: fixed;">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="author" content="Adi Setyawan" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{pageTitle}</title>
+    <ClientRouter />
+  </head>
+  <body>
+    <div class="app-shell" id="app-shell">
+      <!-- Top toolbar -->
+      <Toolbar />
+
+      <!-- Main content area: sidebar + list + detail -->
+      <div class="app-main">
+        <!-- Mobile sidebar overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Left sidebar -->
+        <Sidebar currentFolder={currentFolder} />
+
+        <!-- Content slot (list + detail) -->
+        <slot />
+      </div>
+    </div>
+
+    <!-- Compose Modal -->
+    <div class="compose-overlay" id="compose-overlay">
+      <div class="compose-modal">
+        <div class="compose-modal__header">
+          <h3>New Message</h3>
+          <button class="compose-modal__close" id="compose-close" aria-label="Close">&times;</button>
+        </div>
+        <form
+          class="compose-modal__form"
+          id="compose-form"
+          action="https://formspree.io/f/xjgeajby"
+          method="POST"
+        >
+          <input type="hidden" name="_subject" value="New Message from Website" />
+          <div class="compose-modal__field">
+            <label for="compose-to">To</label>
+            <input type="text" id="compose-to" value="setyawanadi" readonly class="compose-modal__input compose-modal__input--readonly" />
+          </div>
+          <div class="compose-modal__field">
+            <label for="compose-from">From</label>
+            <input type="email" id="compose-from" name="email" placeholder="your@email.com" required class="compose-modal__input" />
+          </div>
+          <div class="compose-modal__field">
+            <label for="compose-subject">Subject</label>
+            <input type="text" id="compose-subject" name="_subject" placeholder="What's this about?" required class="compose-modal__input" />
+          </div>
+          <div class="compose-modal__field">
+            <label for="compose-message">Message</label>
+            <textarea id="compose-message" name="message" rows="10" placeholder="Write your message..." required class="compose-modal__textarea"></textarea>
+          </div>
+          <div class="compose-modal__actions">
+            <button type="button" class="compose-modal__cancel" id="compose-cancel">Cancel</button>
+            <button type="submit" class="compose-modal__send" id="compose-submit">Send Message</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Compose Success Modal -->
+    <div class="compose-overlay" id="compose-success-overlay">
+      <div class="compose-modal compose-success-modal">
+        <div class="compose-success__content">
+          <div class="compose-success__icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <h3 class="compose-success__title">Message Sent!</h3>
+          <p class="compose-success__text">Your message has been delivered successfully. Thank you for reaching out!</p>
+          <button class="compose-modal__send" id="compose-success-close" style="margin-top: 8px;">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Re-binds on every client-side navigation (View Transitions)
+      document.addEventListener("astro:page-load", () => {
+        const menuBtn = document.getElementById("menu-toggle");
+        const sidebar = document.getElementById("sidebar");
+        const sidebarOverlay = document.getElementById("sidebar-overlay");
+
+        function toggleSidebar() {
+          sidebar?.classList.toggle("sidebar--open");
+          sidebarOverlay?.classList.toggle("overlay--visible");
+        }
+
+        menuBtn?.addEventListener("click", toggleSidebar);
+        sidebarOverlay?.addEventListener("click", toggleSidebar);
+
+        // Compose modal
+        const composeBtn = document.getElementById("compose-btn");
+        const composeOverlay = document.getElementById("compose-overlay");
+        const composeClose = document.getElementById("compose-close");
+        const composeCancel = document.getElementById("compose-cancel");
+        const composeForm = document.getElementById("compose-form") as HTMLFormElement | null;
+        const composeSubmit = document.getElementById("compose-submit");
+
+        const composeSuccessOverlay = document.getElementById("compose-success-overlay");
+        const composeSuccessClose = document.getElementById("compose-success-close");
+
+        function openCompose() {
+          composeOverlay?.classList.add("compose-overlay--visible");
+        }
+        function closeCompose() {
+          composeOverlay?.classList.remove("compose-overlay--visible");
+        }
+        function openComposeSuccess() {
+          composeSuccessOverlay?.classList.add("compose-overlay--visible");
+        }
+        function closeComposeSuccess() {
+          composeSuccessOverlay?.classList.remove("compose-overlay--visible");
+        }
+
+        composeBtn?.addEventListener("click", openCompose);
+        composeClose?.addEventListener("click", closeCompose);
+        composeCancel?.addEventListener("click", closeCompose);
+        composeOverlay?.addEventListener("click", (e) => {
+          if (e.target === composeOverlay) closeCompose();
+        });
+
+        composeSuccessClose?.addEventListener("click", closeComposeSuccess);
+        composeSuccessOverlay?.addEventListener("click", (e) => {
+          if (e.target === composeSuccessOverlay) closeComposeSuccess();
+        });
+
+        composeForm?.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          if (composeSubmit) {
+            composeSubmit.textContent = "Sending...";
+            (composeSubmit as HTMLButtonElement).disabled = true;
+          }
+
+          const formData = new FormData(composeForm);
+
+          try {
+            const response = await fetch(composeForm.action, {
+              method: "POST",
+              body: formData,
+              headers: { Accept: "application/json" },
+            });
+
+            if (response.ok) {
+              closeCompose();
+              openComposeSuccess();
+              composeForm.reset();
+            } else {
+              alert("Failed to send message. Please try again.");
+            }
+          } catch {
+            alert("Network error. Please try again.");
+          } finally {
+            if (composeSubmit) {
+              composeSubmit.textContent = "Send Message";
+              (composeSubmit as HTMLButtonElement).disabled = false;
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  .app-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
+
+  .app-main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .sidebar-overlay {
+    display: none;
+  }
+
+  /* Compose Modal */
+  .compose-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .compose-overlay--visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .compose-modal {
+    background: var(--bg-primary, #fff);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    width: 640px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: composeIn 0.25s ease;
+  }
+
+  @keyframes composeIn {
+    from {
+      transform: translateY(20px) scale(0.97);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+  }
+
+  .compose-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-subtle, #e5e7eb);
+  }
+
+  .compose-modal__header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary, #111);
+  }
+
+  .compose-modal__close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-muted, #6b7280);
+    padding: 0 4px;
+    line-height: 1;
+  }
+
+  .compose-modal__close:hover {
+    color: var(--text-primary, #111);
+  }
+
+  .compose-modal__form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px;
+  }
+
+  .compose-modal__field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .compose-modal__field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted, #6b7280);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .compose-modal__input,
+  .compose-modal__textarea {
+    padding: 10px 12px;
+    border: 1px solid var(--border-subtle, #d1d5db);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text-primary, #111);
+    background: var(--bg-primary, #fff);
+    transition: border-color 0.15s ease;
+  }
+
+  .compose-modal__input:focus,
+  .compose-modal__textarea:focus {
+    outline: none;
+    border-color: var(--accent, #2563eb);
+  }
+
+  .compose-modal__input--readonly {
+    background: var(--bg-secondary, #f3f4f6);
+    color: var(--text-muted, #6b7280);
+    cursor: not-allowed;
+  }
+
+  .compose-modal__textarea {
+    resize: vertical;
+    min-height: 180px;
+  }
+
+  .compose-modal__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 8px;
+  }
+
+  .compose-modal__cancel {
+    padding: 8px 16px;
+    background: none;
+    border: 1px solid var(--border-subtle, #d1d5db);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    color: var(--text-secondary, #4b5563);
+    transition: background 0.15s ease;
+  }
+
+  .compose-modal__cancel:hover {
+    background: var(--bg-hover, #f3f4f6);
+  }
+
+  .compose-modal__send {
+    padding: 8px 20px;
+    background: var(--accent, #2563eb);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+  }
+
+  .compose-modal__send:hover {
+    filter: brightness(1.1);
+  }
+
+  .compose-modal__send:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .compose-success-modal {
+    max-width: 400px;
+    text-align: center;
+  }
+
+  .compose-success__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 40px 24px;
+  }
+
+  .compose-success__icon {
+    margin-bottom: 8px;
+  }
+
+  .compose-success__title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary, #111);
+  }
+
+  .compose-success__text {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-muted, #6b7280);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar-overlay {
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 90;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--transition-normal);
+    }
+
+    .sidebar-overlay.overlay--visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+</style>

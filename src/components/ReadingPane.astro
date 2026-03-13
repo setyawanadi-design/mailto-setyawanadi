@@ -1,0 +1,777 @@
+---
+interface Attachment {
+  name: string;
+  url: string;
+  size: string;
+}
+
+interface Props {
+  title: string;
+  from: string;
+  fromEmail: string;
+  to?: string;
+  toEmail?: string;
+  date: Date;
+  attachments?: Attachment[];
+  prevUrl?: string;
+  nextUrl?: string;
+}
+
+const {
+  title,
+  from,
+  fromEmail,
+  to = "visitor@visitor",
+  toEmail = "",
+  date,
+  attachments = [],
+  prevUrl,
+  nextUrl,
+} = Astro.props;
+
+const formattedDate = new Date(date).toLocaleDateString("en-US", {
+  weekday: "short",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+---
+
+<article class="reading-pane" id="reading-pane">
+  <!-- Action bar -->
+  <header class="reading-pane__actions">
+    <div class="reading-pane__action-btns">
+      <!-- Expand button (FIRST) -->
+      <button class="action-btn action-btn--expand" id="expand-btn" title="Expand View" aria-label="Expand">
+        <svg class="expand-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <polyline points="9 21 3 21 3 15"></polyline>
+          <line x1="21" y1="3" x2="14" y2="10"></line>
+          <line x1="3" y1="21" x2="10" y2="14"></line>
+        </svg>
+        <svg class="collapse-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="4 14 10 14 10 20"></polyline>
+          <polyline points="20 10 14 10 14 4"></polyline>
+          <line x1="14" y1="10" x2="21" y2="3"></line>
+          <line x1="3" y1="21" x2="10" y2="14"></line>
+        </svg>
+        <span class="expand-label">Expand</span>
+        <span class="collapse-label">Collapse</span>
+      </button>
+      <button class="action-btn" id="reply-btn" title="Reply" aria-label="Reply">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 17 4 12 9 7"></polyline>
+          <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
+        </svg>
+        <span>Reply</span>
+      </button>
+      <button class="action-btn" title="Forward" aria-label="Forward">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 17 20 12 15 7"></polyline>
+          <path d="M4 18v-2a4 4 0 0 1 4-4h12"></path>
+        </svg>
+        <span>Forward</span>
+      </button>
+    </div>
+    <div class="reading-pane__nav-btns">
+      {prevUrl ? (
+        <a href={prevUrl} class="action-btn action-btn--nav" aria-label="Previous">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 19l-7-7 7-7"></path>
+          </svg>
+        </a>
+      ) : (
+        <span class="action-btn action-btn--nav action-btn--disabled" aria-label="Previous" aria-disabled="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 19l-7-7 7-7"></path>
+          </svg>
+        </span>
+      )}
+      {nextUrl ? (
+        <a href={nextUrl} class="action-btn action-btn--nav" aria-label="Next">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 5l7 7-7 7"></path>
+          </svg>
+        </a>
+      ) : (
+        <span class="action-btn action-btn--nav action-btn--disabled" aria-label="Next" aria-disabled="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 5l7 7-7 7"></path>
+          </svg>
+        </span>
+      )}
+    </div>
+  </header>
+
+  <!-- Scrollable content area -->
+  <div class="reading-pane__body">
+    <!-- Post meta -->
+    <div class="reading-pane__post-meta">
+      <h1 class="reading-pane__title">{title}</h1>
+      <div class="reading-pane__sender-row">
+        <div class="reading-pane__sender-left">
+          <div class="reading-pane__avatar">
+            S
+          </div>
+          <div>
+            <p class="reading-pane__from-line">
+              mailto.setyawanadi
+            </p>
+            <p class="reading-pane__to-line">To: {to}</p>
+          </div>
+        </div>
+        <div class="reading-pane__date-block">
+          <p>{formattedDate}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post body -->
+    <div class="email-body">
+      <slot />
+
+      <!-- Auto-generated signature -->
+      <div class="email-signature">
+        <p class="email-signature__regards">Best regards,</p>
+        <p class="email-signature__name">Adi Setyawan</p>
+        <p class="email-signature__links">
+          <a href="mailto:setyawanadi@hotmail.com">setyawanadi@hotmail.com</a>
+          <span class="email-signature__sep">&middot;</span>
+          <a href="https://setyawanadi.netlify.app">setyawanadi.netlify.app</a>
+        </p>
+        <p class="email-signature__badge">SENT VIA SVELTIA</p>
+      </div>
+    </div>
+
+    <!-- Attachments -->
+    {
+      attachments.length > 0 && (
+        <div class="reading-pane__attachments">
+          <div class="attachments__header">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+            </svg>
+            <span>
+              {attachments.length} attachment{attachments.length > 1 ? "s" : ""}
+            </span>
+          </div>
+          <div class="attachments__list">
+            {attachments.map((att) => (
+              <a href={att.url} class="attachment" target="_blank" rel="noopener">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+                <span class="attachment__name">{att.name}</span>
+                <span class="attachment__size">{att.size}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )
+    }
+  </div>
+
+  <!-- Reply Modal -->
+  <div class="reply-modal-overlay" id="reply-modal-overlay">
+    <div class="reply-modal">
+      <div class="reply-modal__header">
+        <h3>Reply</h3>
+        <button class="reply-modal__close" id="reply-modal-close" aria-label="Close">&times;</button>
+      </div>
+      <form
+        class="reply-modal__form"
+        id="reply-form"
+        action="https://formspree.io/f/xjgeajby"
+        method="POST"
+      >
+        <!-- Hidden field: actual subject sent to Formspree -->
+        <input type="hidden" name="_subject" value={`Post Reply: ${title}`} />
+        <div class="reply-modal__field">
+          <label for="reply-subject">Subject</label>
+          <input type="text" id="reply-subject" value={`Re: ${title}`} readonly class="reply-modal__input reply-modal__input--readonly" />
+        </div>
+        <div class="reply-modal__field">
+          <label for="reply-email">Your Email</label>
+          <input type="email" id="reply-email" name="email" placeholder="your@email.com" required class="reply-modal__input" />
+        </div>
+        <div class="reply-modal__field">
+          <label for="reply-message">Message</label>
+          <textarea id="reply-message" name="message" rows="6" placeholder="Write your reply..." required class="reply-modal__textarea"></textarea>
+        </div>
+        <div class="reply-modal__actions">
+          <button type="button" class="reply-modal__cancel" id="reply-modal-cancel">Cancel</button>
+          <button type="submit" class="reply-modal__send" id="reply-submit-btn">Send Reply</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="reply-modal-overlay" id="success-modal-overlay">
+    <div class="reply-modal success-modal">
+      <div class="success-modal__content">
+        <div class="success-modal__icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <h3 class="success-modal__title">Message Sent!</h3>
+        <p class="success-modal__text">Your reply has been delivered successfully. Thank you for reaching out!</p>
+        <button class="reply-modal__send" id="success-modal-close" style="margin-top: 8px;">Done</button>
+      </div>
+    </div>
+  </div>
+</article>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    // Expand toggle
+    const expandBtn = document.getElementById("expand-btn");
+    const msgList = document.querySelector(".msg-list") as HTMLElement | null;
+    const readingPane = document.getElementById("reading-pane");
+
+    if (expandBtn && msgList && readingPane) {
+      expandBtn.addEventListener("click", () => {
+        const isExpanded = readingPane.classList.toggle("reading-pane--expanded");
+        if (isExpanded) {
+          msgList.style.display = "none";
+        } else {
+          msgList.style.display = "";
+        }
+      });
+    }
+
+    // Reply modal
+    const replyBtn = document.getElementById("reply-btn");
+    const overlay = document.getElementById("reply-modal-overlay");
+    const closeBtn = document.getElementById("reply-modal-close");
+    const cancelBtn = document.getElementById("reply-modal-cancel");
+    const replyForm = document.getElementById("reply-form") as HTMLFormElement | null;
+    const submitBtn = document.getElementById("reply-submit-btn");
+
+    // Success modal
+    const successOverlay = document.getElementById("success-modal-overlay");
+    const successCloseBtn = document.getElementById("success-modal-close");
+
+    function openReplyModal() {
+      overlay?.classList.add("reply-modal-overlay--visible");
+    }
+    function closeReplyModal() {
+      overlay?.classList.remove("reply-modal-overlay--visible");
+    }
+    function openSuccessModal() {
+      successOverlay?.classList.add("reply-modal-overlay--visible");
+    }
+    function closeSuccessModal() {
+      successOverlay?.classList.remove("reply-modal-overlay--visible");
+    }
+
+    replyBtn?.addEventListener("click", openReplyModal);
+    closeBtn?.addEventListener("click", closeReplyModal);
+    cancelBtn?.addEventListener("click", closeReplyModal);
+    overlay?.addEventListener("click", (e) => {
+      if (e.target === overlay) closeReplyModal();
+    });
+
+    successCloseBtn?.addEventListener("click", closeSuccessModal);
+    successOverlay?.addEventListener("click", (e) => {
+      if (e.target === successOverlay) closeSuccessModal();
+    });
+
+    // Formspree submission
+    replyForm?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      if (submitBtn) {
+        submitBtn.textContent = "Sending...";
+        (submitBtn as HTMLButtonElement).disabled = true;
+      }
+
+      const formData = new FormData(replyForm);
+
+      try {
+        const response = await fetch(replyForm.action, {
+          method: "POST",
+          body: formData,
+          headers: { Accept: "application/json" },
+        });
+
+        if (response.ok) {
+          replyForm.reset();
+          closeReplyModal();
+          openSuccessModal();
+        } else {
+          alert("Something went wrong. Please try again.");
+        }
+      } catch {
+        alert("Network error. Please check your connection and try again.");
+      } finally {
+        if (submitBtn) {
+          submitBtn.textContent = "Send Reply";
+          (submitBtn as HTMLButtonElement).disabled = false;
+        }
+      }
+    });
+  });
+</script>
+
+<style>
+  .reading-pane {
+    flex: 1;
+    height: 100%;
+    background: var(--bg-detail);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ===== ACTION BAR ===== */
+  .reading-pane__actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-bottom: 1px solid var(--border-detail);
+    min-height: 56px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+  .reading-pane__action-btns {
+    display: flex;
+    gap: var(--spacing-xs);
+    align-items: center;
+  }
+
+  .reading-pane__nav-btns {
+    display: flex;
+    gap: var(--spacing-xs);
+    align-items: center;
+  }
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 6px var(--spacing-md);
+    border-radius: 999px;
+    font-size: var(--font-size-xs);
+    color: #2563eb;
+    font-weight: 600;
+    border: 1px solid #bfdbfe;
+    background: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition:
+      background var(--transition-fast),
+      box-shadow var(--transition-fast);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .action-btn:hover {
+    background: #eff6ff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  }
+
+  .action-btn span {
+    display: none;
+  }
+
+  @media (min-width: 1200px) {
+    .action-btn span {
+      display: inline;
+    }
+
+    /* Keep collapse label hidden by default even on wide screens */
+    .action-btn .collapse-label {
+      display: none;
+    }
+
+    .reading-pane--expanded .action-btn .collapse-label {
+      display: inline;
+    }
+
+    .reading-pane--expanded .action-btn .expand-label {
+      display: none;
+    }
+  }
+
+  .action-btn--nav {
+    padding: 6px;
+    text-decoration: none;
+  }
+
+  .action-btn--disabled {
+    opacity: 0.35;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  /* Expand/collapse icon + label visibility */
+  .collapse-icon,
+  .collapse-label {
+    display: none;
+  }
+
+  .reading-pane--expanded .expand-icon,
+  .reading-pane--expanded .expand-label {
+    display: none;
+  }
+
+  .reading-pane--expanded .collapse-icon,
+  .reading-pane--expanded .collapse-label {
+    display: inline-block;
+  }
+
+  /* Expanded mode: center content with comfortable max-width */
+  .reading-pane--expanded .reading-pane__body {
+    max-width: 780px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* ===== SCROLLABLE CONTENT AREA ===== */
+  .reading-pane__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-xl);
+  }
+
+  /* ===== POST META ===== */
+  .reading-pane__post-meta {
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-xl);
+    border-bottom: 1px solid var(--border-detail);
+  }
+
+  .reading-pane__title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.25;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .reading-pane__sender-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .reading-pane__sender-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+  }
+
+  .reading-pane__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-md);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .reading-pane__from-line {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .reading-pane__from-email {
+    font-weight: 400;
+    color: #94a3b8;
+  }
+
+  .reading-pane__to-line {
+    font-size: var(--font-size-xs);
+    color: #64748b;
+  }
+
+  .reading-pane__date-block {
+    font-size: var(--font-size-xs);
+    color: #64748b;
+    text-align: right;
+  }
+
+  /* ===== ATTACHMENTS ===== */
+  .reading-pane__attachments {
+    margin-top: var(--spacing-2xl);
+    padding-top: var(--spacing-lg);
+    border-top: 1px dashed #e2e8f0;
+  }
+
+  .attachments__header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: var(--font-size-xs);
+    color: #64748b;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .attachments__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .attachment {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    color: #0f172a;
+    text-decoration: none;
+    transition:
+      background var(--transition-fast),
+      border-color var(--transition-fast);
+  }
+
+  .attachment:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+  }
+
+  .attachment__name {
+    font-weight: 500;
+  }
+
+  .attachment__size {
+    color: #64748b;
+    font-size: var(--font-size-xs);
+  }
+
+  /* ===== REPLY MODAL ===== */
+  .reply-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .reply-modal-overlay--visible {
+    display: flex;
+  }
+
+  .reply-modal {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.16);
+    width: 90%;
+    max-width: 480px;
+    overflow: hidden;
+    animation: modalIn 0.2s ease-out;
+  }
+
+  @keyframes modalIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .reply-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .reply-modal__header h3 {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .reply-modal__close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+    line-height: 1;
+  }
+
+  .reply-modal__close:hover {
+    background: #f1f5f9;
+    color: #475569;
+  }
+
+  .reply-modal__form {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .reply-modal__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .reply-modal__field label {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .reply-modal__input,
+  .reply-modal__textarea {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family);
+    color: #0f172a;
+    transition: border-color var(--transition-fast);
+    outline: none;
+  }
+
+  .reply-modal__input:focus,
+  .reply-modal__textarea:focus {
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+  }
+
+  .reply-modal__input--readonly {
+    background: #f8fafc;
+    color: #64748b;
+    cursor: not-allowed;
+  }
+
+  .reply-modal__textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .reply-modal__actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: flex-end;
+    padding-top: var(--spacing-sm);
+  }
+
+  .reply-modal__cancel {
+    padding: 8px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+    color: #64748b;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+  }
+
+  .reply-modal__cancel:hover {
+    background: #f1f5f9;
+  }
+
+  .reply-modal__send {
+    padding: 8px 20px;
+    border: 1px solid #1e70bf;
+    border-radius: 10px;
+    background: linear-gradient(to bottom, #7abcff 0%, #60abf8 44%, #4096ee 100%);
+    color: #fff;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.15);
+    transition: all 0.15s ease;
+  }
+
+  .reply-modal__send:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+
+  /* ===== SUCCESS MODAL ===== */
+  .success-modal {
+    text-align: center;
+    max-width: 380px;
+  }
+
+  .success-modal__content {
+    padding: var(--spacing-2xl) var(--spacing-xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+  }
+
+  .success-modal__icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #f0fdf4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: popIn 0.3s ease-out;
+  }
+
+  @keyframes popIn {
+    from {
+      transform: scale(0.5);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .success-modal__title {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+  }
+
+  .success-modal__text {
+    font-size: var(--font-size-sm);
+    color: #64748b;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .reading-pane {
+      display: none;
+    }
+  }
+</style>

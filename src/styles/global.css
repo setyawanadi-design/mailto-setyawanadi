@@ -1,0 +1,415 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ===== FRUTIGER AERO — DESIGN TOKENS ===== */
+:root {
+  /* Background — soft sky gradient */
+  --bg-app: linear-gradient(180deg, #e0f2fe 0%, #f0f9ff 40%, #ffffff 100%);
+  --bg-sidebar: linear-gradient(135deg, #e0f2fe 0%, #f8fbff 100%);
+  --bg-list: rgba(255, 255, 255, 0.85);
+  --bg-detail: #ffffff;
+  --bg-toolbar: rgba(255, 255, 255, 0.7);
+  --bg-hover: rgba(14, 165, 233, 0.06);
+  --bg-active: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%);
+  --bg-compose-btn: linear-gradient(to bottom, #7abcff 0%, #60abf8 44%, #4096ee 100%);
+
+  /* Accent — sky blue */
+  --accent: #0ea5e9;
+  --accent-hover: #0284c7;
+  --accent-subtle: rgba(14, 165, 233, 0.08);
+  --accent-border: rgba(14, 165, 233, 0.35);
+
+  /* Text — slate tones */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --text-detail: #0f172a;
+  --text-detail-secondary: #64748b;
+  --text-accent: #0369a1;
+  --text-link: #0284c7;
+
+  /* Badge */
+  --badge-bg: #0ea5e9;
+  --badge-text: #ffffff;
+
+  /* Borders — blue-tinted */
+  --border-subtle: #bfdbfe;
+  --border-list: #e0f2fe;
+  --border-detail: #e2e8f0;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  /* Glass — used selectively on toolbar + action bar */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.08);
+  --glass-blur: 12px;
+
+  /* Typography */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-size-xs: 0.6875rem;
+  /* 11px */
+  --font-size-sm: 0.75rem;
+  /* 12px */
+  --font-size-base: 0.8125rem;
+  /* 13px */
+  --font-size-md: 0.875rem;
+  /* 14px */
+  --font-size-lg: 1rem;
+  /* 16px */
+  --font-size-xl: 1.125rem;
+  /* 18px */
+  --font-size-2xl: 1.5rem;
+  /* 24px */
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+
+  /* Dimensions */
+  --sidebar-width: 200px;
+  --list-width: 340px;
+  --toolbar-height: 44px;
+
+  /* Transitions */
+  --transition-fast: 120ms ease;
+  --transition-normal: 200ms ease;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+}
+
+/* ===== CUSTOM SCROLLBAR ===== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ===== CSS RESET ===== */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  background: var(--bg-app);
+  background-attachment: fixed;
+  line-height: 1.5;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+button {
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ===== SCROLLBAR STYLING ===== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ===== UTILITIES ===== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ===== EMAIL BODY TYPOGRAPHY (Reading Pane) ===== */
+.email-body {
+  font-size: var(--font-size-md);
+  line-height: 1.7;
+  color: var(--text-detail);
+}
+
+.email-body h1,
+.email-body h2,
+.email-body h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.email-body h1 {
+  font-size: 1.5rem;
+}
+
+.email-body h2 {
+  font-size: 1.25rem;
+}
+
+.email-body h3 {
+  font-size: 1.1rem;
+}
+
+.email-body p {
+  margin-bottom: 1em;
+}
+
+.email-body ul,
+.email-body ol {
+  margin-bottom: 1em;
+  padding-left: 1.5em;
+}
+
+.email-body ul {
+  list-style: disc;
+}
+
+.email-body ol {
+  list-style: decimal;
+}
+
+.email-body li {
+  margin-bottom: 0.35em;
+}
+
+.email-body a {
+  color: var(--text-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.email-body a:hover {
+  color: var(--accent);
+}
+
+.email-body strong {
+  font-weight: 600;
+}
+
+.email-body blockquote {
+  border-left: 3px solid var(--border-detail);
+  padding-left: 1em;
+  margin: 1em 0;
+  color: var(--text-detail-secondary);
+  font-style: italic;
+}
+
+.email-body code {
+  background: #f1f5f9;
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+}
+
+.email-body pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 1em;
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.email-body pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+.email-body hr {
+  border: none;
+  border-top: 1px solid var(--border-detail);
+  margin: 1.5em 0;
+}
+
+.email-body img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  margin: 1em 0;
+  display: block;
+}
+
+.email-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: var(--font-size-sm);
+}
+
+.email-body th,
+.email-body td {
+  padding: 0.6em 1em;
+  border: 1px solid var(--border-detail);
+  text-align: left;
+}
+
+.email-body th {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.email-body tr:hover {
+  background: #f8fafc;
+}
+
+.email-body figure {
+  margin: 1.5em 0;
+}
+
+.email-body figcaption {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 0.5em;
+}
+
+/* ===== SIGNATURE ===== */
+.email-signature {
+  margin-top: 2em;
+  padding-top: 1em;
+  border-top: 1px dashed #cbd5e1;
+  font-size: var(--font-size-sm);
+  color: var(--text-detail-secondary);
+}
+
+.email-signature p {
+  margin: 0;
+}
+
+.email-signature__regards {
+  color: #94a3b8;
+  margin-bottom: 2px !important;
+}
+
+.email-signature__name {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: var(--font-size-md);
+}
+
+.email-signature__links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px !important;
+}
+
+.email-signature__links a {
+  color: var(--text-link);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+}
+
+.email-signature__links a:hover {
+  text-decoration: underline;
+}
+
+.email-signature__sep {
+  color: #cbd5e1;
+  font-size: var(--font-size-xs);
+}
+
+.email-signature__badge {
+  display: inline-block;
+  margin-top: 10px !important;
+  padding: 4px 12px;
+  background: #eef2f6;
+  color: #475569;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border-radius: 4px;
+}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  :root {
+    --list-width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 0px;
+    --list-width: 100%;
+  }
+
+  body {
+    overflow: auto;
+    height: auto;
+  }
+}

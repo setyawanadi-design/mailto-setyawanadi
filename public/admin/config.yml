@@ -32,7 +32,7 @@ collections:
     create: true
     slug: "{{slug}}"
     extension: md
-    format: frontmatter
+    format: yaml-frontmatter
     fields: *email_fields
 
   - name: sent
@@ -42,7 +42,7 @@ collections:
     create: true
     slug: "{{slug}}"
     extension: md
-    format: frontmatter
+    format: yaml-frontmatter
     fields: *email_fields
 
   - name: drafts
@@ -52,7 +52,7 @@ collections:
     create: true
     slug: "{{slug}}"
     extension: md
-    format: frontmatter
+    format: yaml-frontmatter
     fields: *email_fields
 
   - name: notes
@@ -62,7 +62,7 @@ collections:
     create: true
     slug: "{{slug}}"
     extension: md
-    format: frontmatter
+    format: yaml-frontmatter
     fields: *email_fields
 
   - name: archive
@@ -72,7 +72,7 @@ collections:
     create: true
     slug: "{{slug}}"
     extension: md
-    format: frontmatter
+    format: yaml-frontmatter
     fields: *email_fields
 
   - name: starred
@@ -82,7 +82,7 @@ collections:
     create: true
     slug: "{{slug}}"
     extension: md
-    format: frontmatter
+    format: yaml-frontmatter
     fields: *email_fields
 
   - name: logs
@@ -92,7 +92,7 @@ collections:
     create: true
     slug: "{{slug}}"
     extension: md
-    format: frontmatter
+    format: yaml-frontmatter
     fields:
       - { label: Title, name: title, widget: string, required: false, default: "" }
       - { label: Date, name: date, widget: datetime }

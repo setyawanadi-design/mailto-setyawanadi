@@ -2,7 +2,7 @@
 
 backend:
   name: github
-  repo: setyawanadi/setyawanadi.design
+  repo: setyawanadi/mailto.setyawanadi
   branch: main
 
 media_folder: public/media

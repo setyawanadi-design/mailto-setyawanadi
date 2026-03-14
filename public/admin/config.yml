@@ -1,9 +1,6 @@
 backend:
-  name: github
-  repo: setyawanadi-design/mailto-setyawanadi
+  name: git-gateway
   branch: main
-  auth_type: pkce
-  app_id: sveltia-cms
 
 media_folder: public/uploads
 public_folder: /uploads

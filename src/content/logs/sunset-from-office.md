@@ -1,5 +1,5 @@
 ---
-title: ""
+title: "sunset from the office"
 date: 2025-03-14
 image: "https://picsum.photos/seed/sunset-office/600/400"
 imageAlt: "Sunset view from office window"

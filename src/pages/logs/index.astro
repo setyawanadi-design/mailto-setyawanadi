@@ -1,0 +1,929 @@
+---
+import { getCollection, render } from 'astro:content';
+import EmailLayout from '../../layouts/EmailLayout.astro';
+
+const items = await getCollection('logs');
+
+const sortedItems = items.sort((a: any, b: any) => {
+  return new Date(b.data.date).getTime() - new Date(a.data.date).getTime();
+});
+
+// Render all items
+const renderedItems = await Promise.all(
+  sortedItems.map(async (item: any) => {
+    const { Content } = await render(item);
+    return { item, Content };
+  })
+);
+---
+
+<EmailLayout
+  title="setyawanadi"
+  currentFolder="logs"
+  description="Logs — short thoughts and updates"
+>
+  <div class="logs-feed">
+    <!-- Header -->
+    <div class="logs-feed__header">
+      <h1 class="logs-feed__title">Logs</h1>
+      <p class="logs-feed__subtitle">Short thoughts, updates, and whatever crosses my mind.</p>
+    </div>
+
+    <hr class="logs-feed__divider" />
+
+    <!-- Timeline -->
+    <div class="logs-feed__timeline">
+      {renderedItems.map(({ item, Content }, index) => {
+        const date = new Date(item.data.date);
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        let relativeDate: string;
+        if (diffDays === 0) relativeDate = 'today';
+        else if (diffDays === 1) relativeDate = 'yesterday';
+        else if (diffDays < 30) relativeDate = `${diffDays} days ago`;
+        else if (diffDays < 365) {
+          const months = Math.floor(diffDays / 30);
+          relativeDate = months === 1 ? '1 month ago' : `${months} months ago`;
+        } else {
+          const years = Math.floor(diffDays / 365);
+          relativeDate = years === 1 ? '1 year ago' : `${years} years ago`;
+        }
+        const formattedDate = date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        });
+        const logUrl = `/logs/${item.id}`;
+        const replySubject = `Re: ${logUrl}`;
+        const formspreeSubject = `Log Reply: ${logUrl}`;
+
+        return (
+          <>
+            <article class="log-entry" id={item.id}>
+              <span class="log-entry__date" title={formattedDate}>{relativeDate}</span>
+              {item.data.title && (
+                <h2 class="log-entry__title">{item.data.title}</h2>
+              )}
+
+              <div class="log-entry__body email-body">
+                <Content />
+              </div>
+
+              {item.data.image && (
+                <div class="log-entry__image">
+                  <img src={item.data.image} alt={item.data.imageAlt || ''} loading="lazy" />
+                </div>
+              )}
+
+              <div class="log-entry__actions">
+                <button
+                  class="log-action-btn log-reply-btn"
+                  data-reply-subject={replySubject}
+                  data-formspree-subject={formspreeSubject}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 17 4 12 9 7"></polyline>
+                    <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
+                  </svg>
+                  <span>Reply</span>
+                </button>
+                <button class="log-action-btn log-forward-btn" data-log-title={item.data.title || ''} data-log-url={logUrl}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 17 20 12 15 7"></polyline>
+                    <path d="M4 18v-2a4 4 0 0 1 4-4h12"></path>
+                  </svg>
+                  <span>Forward</span>
+                </button>
+              </div>
+            </article>
+            {index < renderedItems.length - 1 && <hr class="logs-feed__divider" />}
+          </>
+        );
+      })}
+    </div>
+
+    {renderedItems.length === 0 && (
+      <div class="logs-feed__empty">
+        <p>No logs yet.</p>
+      </div>
+    )}
+  </div>
+
+  <!-- Image Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox__close" id="lightbox-close" aria-label="Close">&times;</button>
+    <button class="lightbox__nav lightbox__nav--prev" id="lightbox-prev" aria-label="Previous image">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 19l-7-7 7-7"></path>
+      </svg>
+    </button>
+    <img class="lightbox__img" id="lightbox-img" src="" alt="" />
+    <button class="lightbox__nav lightbox__nav--next" id="lightbox-next" aria-label="Next image">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 5l7 7-7 7"></path>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Reply Modal (shared) -->
+  <div class="reply-modal-overlay" id="log-reply-overlay">
+    <div class="reply-modal">
+      <div class="reply-modal__header">
+        <h3>Reply</h3>
+        <button class="reply-modal__close" id="log-reply-close" aria-label="Close">&times;</button>
+      </div>
+      <form
+        class="reply-modal__form"
+        id="log-reply-form"
+        action="https://formspree.io/f/xjgeajby"
+        method="POST"
+      >
+        <input type="hidden" name="_subject" id="log-hidden-subject" value="" />
+        <div class="reply-modal__field">
+          <label for="log-reply-subject">Subject</label>
+          <input type="text" id="log-reply-subject" readonly class="reply-modal__input reply-modal__input--readonly" />
+        </div>
+        <div class="reply-modal__field">
+          <label for="log-reply-email">Your Email</label>
+          <input type="email" id="log-reply-email" name="email" placeholder="your@email.com" required class="reply-modal__input" />
+        </div>
+        <div class="reply-modal__field">
+          <label for="log-reply-message">Message</label>
+          <textarea id="log-reply-message" name="message" rows="4" placeholder="Write your reply..." required class="reply-modal__textarea"></textarea>
+        </div>
+        <div class="reply-modal__actions">
+          <button type="button" class="reply-modal__cancel" id="log-reply-cancel">Cancel</button>
+          <button type="submit" class="reply-modal__send" id="log-reply-submit">Send Reply</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="reply-modal-overlay" id="log-success-overlay">
+    <div class="reply-modal success-modal">
+      <div class="success-modal__content">
+        <div class="success-modal__icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <h3 class="success-modal__title">Message Sent!</h3>
+        <p class="success-modal__text">Your reply has been delivered successfully. Thank you!</p>
+        <button class="reply-modal__send" id="log-success-close" style="margin-top: 8px;">Done</button>
+      </div>
+    </div>
+  </div>
+</EmailLayout>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    // Group consecutive images into photo grids
+    document.querySelectorAll(".log-entry__body").forEach((body) => {
+      const children = Array.from(body.children);
+      let i = 0;
+      while (i < children.length) {
+        const el = children[i];
+        // Check if this is a <p> containing only an <img>
+        if (el.tagName === "P" && el.children.length === 1 && el.children[0].tagName === "IMG") {
+          // Collect consecutive image paragraphs
+          const group: Element[] = [el];
+          let j = i + 1;
+          while (j < children.length) {
+            const next = children[j];
+            if (next.tagName === "P" && next.children.length === 1 && next.children[0].tagName === "IMG") {
+              group.push(next);
+              j++;
+            } else {
+              break;
+            }
+          }
+          // Wrap in a photo grid
+          const grid = document.createElement("div");
+          grid.className = "photo-grid";
+          grid.setAttribute("data-count", String(group.length));
+          el.parentNode!.insertBefore(grid, el);
+          group.forEach((p) => {
+            const img = p.children[0] as HTMLElement;
+            grid.appendChild(img);
+            p.remove();
+          });
+          // Update children array since DOM changed
+          i = Array.from(body.children).indexOf(grid) + 1;
+          children.splice(0, children.length, ...Array.from(body.children));
+        } else {
+          i++;
+        }
+      }
+    });
+
+    // Lightbox with prev/next navigation
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightbox-img") as HTMLImageElement | null;
+    const lightboxClose = document.getElementById("lightbox-close");
+    const lightboxPrev = document.getElementById("lightbox-prev");
+    const lightboxNext = document.getElementById("lightbox-next");
+
+    const allImages = Array.from(document.querySelectorAll(".log-entry__body img, .photo-grid img, .log-entry__image img")) as HTMLImageElement[];
+    let currentIndex = 0;
+
+    function showImage(index: number) {
+      if (!lightboxImg || !allImages.length) return;
+      currentIndex = index;
+      lightboxImg.src = allImages[currentIndex].src;
+      lightboxImg.alt = allImages[currentIndex].alt;
+      // Hide arrows at edges
+      if (lightboxPrev) lightboxPrev.style.display = currentIndex === 0 ? "none" : "flex";
+      if (lightboxNext) lightboxNext.style.display = currentIndex === allImages.length - 1 ? "none" : "flex";
+    }
+
+    allImages.forEach((img, i) => {
+      img.style.cursor = "pointer";
+      img.addEventListener("click", () => {
+        if (lightbox) {
+          showImage(i);
+          lightbox.classList.add("lightbox--visible");
+        }
+      });
+    });
+
+    function closeLightbox() {
+      lightbox?.classList.remove("lightbox--visible");
+    }
+
+    lightboxPrev?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (currentIndex > 0) showImage(currentIndex - 1);
+    });
+
+    lightboxNext?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (currentIndex < allImages.length - 1) showImage(currentIndex + 1);
+    });
+
+    lightboxClose?.addEventListener("click", closeLightbox);
+    lightbox?.addEventListener("click", (e) => {
+      if (e.target === lightbox) closeLightbox();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (!lightbox?.classList.contains("lightbox--visible")) return;
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft" && currentIndex > 0) showImage(currentIndex - 1);
+      if (e.key === "ArrowRight" && currentIndex < allImages.length - 1) showImage(currentIndex + 1);
+    });
+
+    const overlay = document.getElementById("log-reply-overlay");
+    const closeBtn = document.getElementById("log-reply-close");
+    const cancelBtn = document.getElementById("log-reply-cancel");
+    const form = document.getElementById("log-reply-form") as HTMLFormElement | null;
+    const submitBtn = document.getElementById("log-reply-submit");
+    const subjectInput = document.getElementById("log-reply-subject") as HTMLInputElement | null;
+    const hiddenSubject = document.getElementById("log-hidden-subject") as HTMLInputElement | null;
+    const successOverlay = document.getElementById("log-success-overlay");
+    const successClose = document.getElementById("log-success-close");
+
+    function openReply() { overlay?.classList.add("reply-modal-overlay--visible"); }
+    function closeReply() { overlay?.classList.remove("reply-modal-overlay--visible"); }
+    function openSuccess() { successOverlay?.classList.add("reply-modal-overlay--visible"); }
+    function closeSuccess() { successOverlay?.classList.remove("reply-modal-overlay--visible"); }
+
+    // Each reply button sets the subject and opens modal
+    document.querySelectorAll(".log-reply-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const replySubject = (btn as HTMLElement).dataset.replySubject || "";
+        const formspreeSubject = (btn as HTMLElement).dataset.formspreeSubject || "";
+        if (subjectInput) subjectInput.value = replySubject;
+        if (hiddenSubject) hiddenSubject.value = formspreeSubject;
+        openReply();
+      });
+    });
+
+    closeBtn?.addEventListener("click", closeReply);
+    cancelBtn?.addEventListener("click", closeReply);
+    overlay?.addEventListener("click", (e) => { if (e.target === overlay) closeReply(); });
+    successClose?.addEventListener("click", closeSuccess);
+    successOverlay?.addEventListener("click", (e) => { if (e.target === successOverlay) closeSuccess(); });
+
+    // Forward button — native share sheet on mobile, copy link on desktop
+    document.querySelectorAll(".log-forward-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const title = (btn as HTMLElement).dataset.logTitle || '';
+        const url = window.location.origin + (btn as HTMLElement).dataset.logUrl;
+
+        if (navigator.share) {
+          try {
+            await navigator.share({ title, url });
+          } catch (err) {
+            // User cancelled share — do nothing
+          }
+        } else {
+          // Desktop fallback: copy link to clipboard
+          try {
+            await navigator.clipboard.writeText(url);
+            const label = btn.querySelector("span");
+            if (label) {
+              const original = label.textContent;
+              label.textContent = "Link copied!";
+              setTimeout(() => { label.textContent = original; }, 2000);
+            }
+          } catch {
+            // Clipboard API not available
+          }
+        }
+      });
+    });
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (submitBtn) {
+        submitBtn.textContent = "Sending...";
+        (submitBtn as HTMLButtonElement).disabled = true;
+      }
+      const formData = new FormData(form);
+      try {
+        const response = await fetch(form.action, {
+          method: "POST",
+          body: formData,
+          headers: { Accept: "application/json" },
+        });
+        if (response.ok) {
+          form.reset();
+          closeReply();
+          openSuccess();
+        } else {
+          alert("Something went wrong. Please try again.");
+        }
+      } catch {
+        alert("Network error. Please check your connection and try again.");
+      } finally {
+        if (submitBtn) {
+          submitBtn.textContent = "Send Reply";
+          (submitBtn as HTMLButtonElement).disabled = false;
+        }
+      }
+    });
+  });
+</script>
+
+<style is:global>
+  .log-entry__body.email-body {
+    font-size: var(--font-size-base);
+  }
+
+  .log-entry__body.email-body p {
+    margin: 0;
+  }
+
+  .log-entry__body.email-body p + p {
+    margin-top: var(--spacing-sm);
+  }
+
+  .log-entry__body.email-body ol {
+    margin: 0.5em 0;
+    padding-left: 1.5em;
+  }
+
+  .log-entry__body.email-body img {
+    width: 100%;
+    display: block;
+    border-radius: 12px;
+    margin-top: var(--spacing-sm);
+  }
+
+  /* ===== PHOTO GRID ===== */
+  .photo-grid {
+    display: grid;
+    gap: 4px;
+    margin-top: var(--spacing-sm);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .photo-grid img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 0;
+    margin-top: 0;
+  }
+
+  /* 1 image: full width */
+  .photo-grid[data-count="1"] {
+    grid-template-columns: 1fr;
+  }
+
+  .photo-grid[data-count="1"] img {
+    max-height: 400px;
+  }
+
+  /* 2 images: side by side */
+  .photo-grid[data-count="2"] {
+    grid-template-columns: 1fr 1fr;
+    aspect-ratio: 2 / 1;
+  }
+
+  /* 3 images: 1 large left, 2 stacked right */
+  .photo-grid[data-count="3"] {
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    aspect-ratio: 3 / 2;
+  }
+
+  .photo-grid[data-count="3"] img:first-child {
+    grid-row: 1 / 3;
+  }
+
+  /* ===== LIGHTBOX ===== */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-lg);
+  }
+
+  .lightbox--visible {
+    display: flex;
+  }
+
+  .lightbox__img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 8px;
+    animation: lightboxIn 0.2s ease-out;
+  }
+
+  @keyframes lightboxIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .lightbox__close {
+    position: absolute;
+    top: var(--spacing-lg);
+    right: var(--spacing-lg);
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.15s ease;
+  }
+
+  .lightbox__close:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .lightbox__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .lightbox__nav:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  .lightbox__nav--prev {
+    left: var(--spacing-lg);
+  }
+
+  .lightbox__nav--next {
+    right: var(--spacing-lg);
+  }
+</style>
+
+<style>
+  .logs-feed {
+    flex: 1;
+    height: 100%;
+    overflow-y: auto;
+    background: var(--bg-detail);
+  }
+
+  .logs-feed__header {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: var(--spacing-2xl) var(--spacing-lg) var(--spacing-lg);
+  }
+
+  .logs-feed__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 4px;
+  }
+
+  .logs-feed__subtitle {
+    font-size: var(--font-size-sm);
+    color: #64748b;
+    margin: 0;
+  }
+
+  .logs-feed__divider {
+    max-width: 600px;
+    margin: 0 auto;
+    border: none;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .logs-feed__timeline {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg) var(--spacing-2xl);
+  }
+
+  .logs-feed__empty {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: var(--spacing-2xl);
+    text-align: center;
+    color: #94a3b8;
+  }
+
+  /* ===== LOG ENTRY ===== */
+  .log-entry {
+    padding: var(--spacing-xl) 0;
+  }
+
+  .log-entry__date {
+    font-size: var(--font-size-xs);
+    color: #94a3b8;
+    display: block;
+  }
+
+  .log-entry__title {
+    font-size: var(--font-size-2xl);
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 var(--spacing-sm);
+  }
+
+  .log-entry__body {
+    color: #334155;
+    line-height: 1.6;
+    font-size: var(--font-size-base);
+  }
+
+  .log-entry__image {
+    margin-top: var(--spacing-md);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .log-entry__image img {
+    width: 100%;
+    display: block;
+    border-radius: 12px;
+  }
+
+  .log-entry__actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+  }
+
+  .log-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: var(--font-size-xs);
+    color: #64748b;
+    font-weight: 500;
+    border: 1px solid #e2e8f0;
+    background: transparent;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .log-action-btn:hover {
+    color: #2563eb;
+    border-color: #bfdbfe;
+    background: #eff6ff;
+  }
+
+  /* ===== REPLY/SUCCESS MODAL (same styles as ReadingPane) ===== */
+  .reply-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .reply-modal-overlay--visible {
+    display: flex;
+  }
+
+  .reply-modal {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.16);
+    width: 90%;
+    max-width: 480px;
+    overflow: hidden;
+    animation: modalIn 0.2s ease-out;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .reply-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .reply-modal__header h3 {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .reply-modal__close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+    line-height: 1;
+  }
+
+  .reply-modal__close:hover {
+    background: #f1f5f9;
+    color: #475569;
+  }
+
+  .reply-modal__form {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .reply-modal__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .reply-modal__field label {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .reply-modal__input,
+  .reply-modal__textarea {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family);
+    color: #0f172a;
+    transition: border-color var(--transition-fast);
+    outline: none;
+  }
+
+  .reply-modal__input::placeholder,
+  .reply-modal__textarea::placeholder {
+    color: #cbd5e1;
+  }
+
+  .reply-modal__input:focus,
+  .reply-modal__textarea:focus {
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+  }
+
+  .reply-modal__input--readonly {
+    background: #f8fafc;
+    color: #64748b;
+    cursor: not-allowed;
+  }
+
+  .reply-modal__textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .reply-modal__actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: flex-end;
+    padding-top: var(--spacing-sm);
+  }
+
+  .reply-modal__cancel {
+    padding: 8px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+    color: #64748b;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+  }
+
+  .reply-modal__cancel:hover {
+    background: #f1f5f9;
+  }
+
+  .reply-modal__send {
+    padding: 8px 20px;
+    border: 1px solid #1e70bf;
+    border-radius: 10px;
+    background: linear-gradient(to bottom, #7abcff 0%, #60abf8 44%, #4096ee 100%);
+    color: #fff;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.15);
+    transition: all 0.15s ease;
+  }
+
+  .reply-modal__send:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+
+  .success-modal {
+    text-align: center;
+    max-width: 380px;
+  }
+
+  .success-modal__content {
+    padding: var(--spacing-2xl) var(--spacing-xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+  }
+
+  .success-modal__icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #f0fdf4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: popIn 0.3s ease-out;
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .success-modal__title {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+  }
+
+  .success-modal__text {
+    font-size: var(--font-size-sm);
+    color: #64748b;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* ===== DARK MODE ===== */
+  :global([data-theme="dark"]) .logs-feed__title {
+    color: #f1f5f9;
+  }
+
+  :global([data-theme="dark"]) .logs-feed__subtitle {
+    color: #94a3b8;
+  }
+
+  :global([data-theme="dark"]) .logs-feed__divider {
+    border-top-color: rgba(51, 65, 85, 0.5);
+  }
+
+  :global([data-theme="dark"]) .log-entry__date {
+    color: #64748b;
+  }
+
+  :global([data-theme="dark"]) .log-entry__title {
+    color: #f1f5f9;
+  }
+
+  :global([data-theme="dark"]) .log-entry__body {
+    color: #cbd5e1;
+  }
+
+  :global([data-theme="dark"]) .log-action-btn {
+    color: #94a3b8;
+    border-color: #334155;
+    background: transparent;
+  }
+
+  :global([data-theme="dark"]) .log-action-btn:hover {
+    color: #60a5fa;
+    border-color: #475569;
+    background: #334155;
+  }
+
+  :global([data-theme="dark"]) .reply-modal {
+    background: #1e293b;
+  }
+
+  :global([data-theme="dark"]) .reply-modal__header {
+    border-bottom-color: #334155;
+  }
+
+  :global([data-theme="dark"]) .reply-modal__header h3 {
+    color: #f1f5f9;
+  }
+
+  :global([data-theme="dark"]) .reply-modal__close:hover {
+    background: #334155;
+    color: #e2e8f0;
+  }
+
+  :global([data-theme="dark"]) .reply-modal__field label {
+    color: #cbd5e1;
+  }
+
+  :global([data-theme="dark"]) .reply-modal__input,
+  :global([data-theme="dark"]) .reply-modal__textarea {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(148, 163, 184, 0.2);
+    color: #f1f5f9;
+  }
+
+  :global([data-theme="dark"]) .reply-modal__input--readonly {
+    background: rgba(255, 255, 255, 0.03);
+    color: #94a3b8;
+  }
+
+  :global([data-theme="dark"]) .reply-modal__input::placeholder,
+  :global([data-theme="dark"]) .reply-modal__textarea::placeholder {
+    color: #64748b;
+  }
+
+  :global([data-theme="dark"]) .reply-modal__cancel {
+    background: #1e293b;
+    border-color: #334155;
+    color: #94a3b8;
+  }
+
+  :global([data-theme="dark"]) .reply-modal__cancel:hover {
+    background: #334155;
+  }
+
+  :global([data-theme="dark"]) .success-modal__icon {
+    background: #064e3b;
+  }
+
+  :global([data-theme="dark"]) .success-modal__title {
+    color: #f1f5f9;
+  }
+
+  :global([data-theme="dark"]) .success-modal__text {
+    color: #94a3b8;
+  }
+</style>

@@ -4,6 +4,7 @@ from: "setyawanadi"
 fromEmail: "setyawanadi@hotmail.com"
 date: 2026-02-20
 preview: "Some thoughts on what I've learned from managing field operations — and how it applies to everything..."
+tags: ["thoughts", "bits-of-life"]
 ---
 
 ![Construction blueprints on a desk](https://picsum.photos/seed/building/800/350)

@@ -1,5 +1,5 @@
 ---
-title: ""
+title: "3am thoughts"
 date: 2025-03-08
 ---
 

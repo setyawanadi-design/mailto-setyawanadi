@@ -4,6 +4,7 @@ from: "setyawanadi"
 fromEmail: "setyawanadi@hotmail.com"
 date: 2026-03-10
 preview: "A quick behind-the-scenes look at why this site looks like Thunderbird and how I built it with Astro..."
+tags: ["dev", "bits-of-life"]
 ---
 
 ![Email client interface on a monitor](https://picsum.photos/seed/emailclient/800/350)

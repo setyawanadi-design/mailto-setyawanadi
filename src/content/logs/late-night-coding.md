@@ -1,5 +1,5 @@
 ---
-title: ""
+title: "late night coding"
 date: 2025-03-13
 image: "https://picsum.photos/seed/nightcode/600/400"
 imageAlt: "Laptop screen glowing in a dark room"

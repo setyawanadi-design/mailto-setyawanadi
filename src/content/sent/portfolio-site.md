@@ -4,6 +4,7 @@ from: "setyawanadi"
 fromEmail: "setyawanadi@hotmail.com"
 date: 2026-03-12
 preview: "Built a Thunderbird-inspired personal site using Astro, vanilla CSS, and content collections..."
+tags: ["dev", "design"]
 ---
 
 ![Code editor with a web project open](https://picsum.photos/seed/portfolio/800/350)

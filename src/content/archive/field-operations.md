@@ -4,6 +4,7 @@ from: "setyawanadi"
 fromEmail: "setyawanadi@hotmail.com"
 date: 2024-06-15
 preview: "Documentation of my previous role coordinating field operations across retail sites..."
+tags: ["career"]
 ---
 
 ![Warehouse logistics operations](https://picsum.photos/seed/fieldops/800/350)

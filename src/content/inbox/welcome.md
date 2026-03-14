@@ -5,6 +5,7 @@ fromEmail: "setyawanadi@hotmail.com"
 date: 2026-03-12
 preview: "Hey! Welcome to my personal corner of the internet. This site is built to look and feel like an email client..."
 pinned: true
+tags: ["personal", "intro"]
 ---
 
 Hey there!

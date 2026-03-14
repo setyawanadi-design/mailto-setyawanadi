@@ -9,6 +9,7 @@ interface Props {
   description?: string;
   currentFolder?: string;
   currentSlug?: string;
+  ogImage?: string;
 }
 
 const {
@@ -16,13 +17,14 @@ const {
   description = "Personal site of Adi Setyawan — designer, developer, and creative thinker.",
   currentFolder = "inbox",
   currentSlug = "",
+  ogImage,
 } = Astro.props;
 
 const pageTitle = `${currentFolder.charAt(0).toUpperCase() + currentFolder.slice(1)} — ${title}`;
 ---
 
 <!doctype html>
-<html lang="en" style="background: linear-gradient(180deg, #e0f2fe 0%, #f0f9ff 40%, #ffffff 100%); background-attachment: fixed;">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -31,9 +33,32 @@ const pageTitle = `${currentFolder.charAt(0).toUpperCase() + currentFolder.slice
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? "summary_large_image" : "summary"} />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{pageTitle}</title>
     <ClientRouter />
+    <script is:inline>
+      // Apply theme before paint to prevent flash
+      (function() {
+        var stored = localStorage.getItem('theme');
+        var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (theme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+
+      // Persist theme across View Transitions (client-side navigation)
+      document.addEventListener('astro:before-swap', function(e) {
+        var stored = localStorage.getItem('theme');
+        var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (theme === 'dark') {
+          e.newDocument.documentElement.setAttribute('data-theme', 'dark');
+        }
+      });
+    </script>
   </head>
   <body>
     <div class="app-shell" id="app-shell">
@@ -111,6 +136,19 @@ const pageTitle = `${currentFolder.charAt(0).toUpperCase() + currentFolder.slice
     <script>
       // Re-binds on every client-side navigation (View Transitions)
       document.addEventListener("astro:page-load", () => {
+        // Theme toggle
+        const themeToggle = document.getElementById("theme-toggle");
+        themeToggle?.addEventListener("click", () => {
+          const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+          if (isDark) {
+            document.documentElement.removeAttribute("data-theme");
+            localStorage.setItem("theme", "light");
+          } else {
+            document.documentElement.setAttribute("data-theme", "dark");
+            localStorage.setItem("theme", "dark");
+          }
+        });
+
         const menuBtn = document.getElementById("menu-toggle");
         const sidebar = document.getElementById("sidebar");
         const sidebarOverlay = document.getElementById("sidebar-overlay");
@@ -222,42 +260,39 @@ const pageTitle = `${currentFolder.charAt(0).toUpperCase() + currentFolder.slice
 
   /* Compose Modal */
   .compose-overlay {
+    display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 200;
-    display: flex;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
     align-items: center;
     justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
   }
 
   .compose-overlay--visible {
-    opacity: 1;
-    pointer-events: auto;
+    display: flex;
   }
 
   .compose-modal {
-    background: var(--bg-primary, #fff);
-    border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    width: 640px;
-    max-width: 90vw;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.16);
+    width: 90%;
+    max-width: 520px;
     max-height: 90vh;
     overflow-y: auto;
-    animation: composeIn 0.25s ease;
+    animation: modalIn 0.2s ease-out;
   }
 
-  @keyframes composeIn {
+  @keyframes modalIn {
     from {
-      transform: translateY(20px) scale(0.97);
       opacity: 0;
+      transform: scale(0.95) translateY(10px);
     }
     to {
-      transform: translateY(0) scale(1);
       opacity: 1;
+      transform: scale(1) translateY(0);
     }
   }
 
@@ -265,155 +300,238 @@ const pageTitle = `${currentFolder.charAt(0).toUpperCase() + currentFolder.slice
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 24px;
-    border-bottom: 1px solid var(--border-subtle, #e5e7eb);
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-bottom: 1px solid #e2e8f0;
   }
 
   .compose-modal__header h3 {
     margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary, #111);
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: #0f172a;
   }
 
   .compose-modal__close {
     background: none;
     border: none;
-    font-size: 24px;
+    font-size: 1.5rem;
+    color: #94a3b8;
     cursor: pointer;
-    color: var(--text-muted, #6b7280);
-    padding: 0 4px;
+    padding: 4px 8px;
+    border-radius: 8px;
     line-height: 1;
   }
 
   .compose-modal__close:hover {
-    color: var(--text-primary, #111);
+    background: #f1f5f9;
+    color: #475569;
   }
 
   .compose-modal__form {
+    padding: var(--spacing-lg) var(--spacing-xl);
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    padding: 24px;
+    gap: var(--spacing-md);
   }
 
   .compose-modal__field {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--spacing-xs);
   }
 
   .compose-modal__field label {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     font-weight: 600;
-    color: var(--text-muted, #6b7280);
+    color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
 
   .compose-modal__input,
   .compose-modal__textarea {
-    padding: 10px 12px;
-    border: 1px solid var(--border-subtle, #d1d5db);
-    border-radius: 6px;
-    font-size: 14px;
-    font-family: inherit;
-    color: var(--text-primary, #111);
-    background: var(--bg-primary, #fff);
-    transition: border-color 0.15s ease;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family);
+    color: #0f172a;
+    transition: border-color var(--transition-fast);
+    outline: none;
+  }
+
+  .compose-modal__input::placeholder,
+  .compose-modal__textarea::placeholder {
+    color: #cbd5e1;
   }
 
   .compose-modal__input:focus,
   .compose-modal__textarea:focus {
-    outline: none;
-    border-color: var(--accent, #2563eb);
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
   }
 
   .compose-modal__input--readonly {
-    background: var(--bg-secondary, #f3f4f6);
-    color: var(--text-muted, #6b7280);
+    background: #f8fafc;
+    color: #64748b;
     cursor: not-allowed;
   }
 
   .compose-modal__textarea {
     resize: vertical;
-    min-height: 180px;
+    min-height: 140px;
   }
 
   .compose-modal__actions {
     display: flex;
+    gap: var(--spacing-sm);
     justify-content: flex-end;
-    gap: 8px;
-    padding-top: 8px;
+    padding-top: var(--spacing-sm);
   }
 
   .compose-modal__cancel {
     padding: 8px 16px;
-    background: none;
-    border: 1px solid var(--border-subtle, #d1d5db);
-    border-radius: 6px;
-    font-size: 14px;
-    font-family: inherit;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+    color: #64748b;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
     cursor: pointer;
-    color: var(--text-secondary, #4b5563);
-    transition: background 0.15s ease;
+    transition: background var(--transition-fast);
   }
 
   .compose-modal__cancel:hover {
-    background: var(--bg-hover, #f3f4f6);
+    background: #f1f5f9;
   }
 
   .compose-modal__send {
     padding: 8px 20px;
-    background: var(--accent, #2563eb);
+    border: 1px solid #1e70bf;
+    border-radius: 10px;
+    background: linear-gradient(to bottom, #7abcff 0%, #60abf8 44%, #4096ee 100%);
     color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-family: inherit;
-    font-weight: 500;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
     cursor: pointer;
-    transition: filter 0.15s ease;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.15);
+    transition: all 0.15s ease;
   }
 
   .compose-modal__send:hover {
     filter: brightness(1.1);
+    transform: translateY(-1px);
   }
 
   .compose-modal__send:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    transform: none;
   }
 
   .compose-success-modal {
-    max-width: 400px;
+    max-width: 380px;
     text-align: center;
   }
 
   .compose-success__content {
+    padding: var(--spacing-2xl) var(--spacing-xl);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
-    padding: 40px 24px;
+    gap: var(--spacing-md);
   }
 
   .compose-success__icon {
-    margin-bottom: 8px;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #f0fdf4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: popIn 0.3s ease-out;
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
   }
 
   .compose-success__title {
     margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--text-primary, #111);
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: #0f172a;
   }
 
   .compose-success__text {
     margin: 0;
-    font-size: 14px;
-    color: var(--text-muted, #6b7280);
+    font-size: var(--font-size-sm);
+    color: #64748b;
     line-height: 1.5;
+  }
+
+  /* ===== DARK MODE ===== */
+  :global([data-theme="dark"]) .compose-modal {
+    background: #1e293b;
+  }
+
+  :global([data-theme="dark"]) .compose-modal__header {
+    border-bottom-color: #334155;
+  }
+
+  :global([data-theme="dark"]) .compose-modal__header h3 {
+    color: #f1f5f9;
+  }
+
+  :global([data-theme="dark"]) .compose-modal__close:hover {
+    background: #334155;
+    color: #e2e8f0;
+  }
+
+  :global([data-theme="dark"]) .compose-modal__field label {
+    color: #cbd5e1;
+  }
+
+  :global([data-theme="dark"]) .compose-modal__input,
+  :global([data-theme="dark"]) .compose-modal__textarea {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(148, 163, 184, 0.2);
+    color: #f1f5f9;
+  }
+
+  :global([data-theme="dark"]) .compose-modal__input--readonly {
+    background: rgba(255, 255, 255, 0.03);
+    color: #94a3b8;
+  }
+
+  :global([data-theme="dark"]) .compose-modal__input::placeholder,
+  :global([data-theme="dark"]) .compose-modal__textarea::placeholder {
+    color: #64748b;
+  }
+
+  :global([data-theme="dark"]) .compose-modal__cancel {
+    background: #1e293b;
+    border-color: #334155;
+    color: #94a3b8;
+  }
+
+  :global([data-theme="dark"]) .compose-modal__cancel:hover {
+    background: #334155;
+  }
+
+  :global([data-theme="dark"]) .compose-success__icon {
+    background: #064e3b;
+  }
+
+  :global([data-theme="dark"]) .compose-success__title {
+    color: #f1f5f9;
+  }
+
+  :global([data-theme="dark"]) .compose-success__text {
+    color: #94a3b8;
   }
 
   @media (max-width: 768px) {

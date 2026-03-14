@@ -79,7 +79,7 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
         </svg>
         <span>Reply</span>
       </button>
-      <button class="action-btn" title="Forward" aria-label="Forward">
+      <button class="action-btn forward-btn" title="Forward" aria-label="Forward" data-share-title={title}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 17 20 12 15 7"></polyline>
           <path d="M4 18v-2a4 4 0 0 1 4-4h12"></path>
@@ -322,6 +322,33 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
     successCloseBtn?.addEventListener("click", closeSuccessModal);
     successOverlay?.addEventListener("click", (e) => {
       if (e.target === successOverlay) closeSuccessModal();
+    });
+
+    // Forward button — native share on mobile, copy link on desktop
+    const forwardBtn = document.querySelector(".forward-btn");
+    forwardBtn?.addEventListener("click", async () => {
+      const shareTitle = (forwardBtn as HTMLElement).dataset.shareTitle || '';
+      const url = window.location.href;
+
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: shareTitle, url });
+        } catch {
+          // User cancelled
+        }
+      } else {
+        try {
+          await navigator.clipboard.writeText(url);
+          const label = forwardBtn.querySelector("span");
+          if (label) {
+            const original = label.textContent;
+            label.textContent = "Link copied!";
+            setTimeout(() => { label.textContent = original; }, 2000);
+          }
+        } catch {
+          // Clipboard not available
+        }
+      }
     });
 
     // Formspree submission
@@ -719,6 +746,11 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
     outline: none;
   }
 
+  .reply-modal__input::placeholder,
+  .reply-modal__textarea::placeholder {
+    color: #cbd5e1;
+  }
+
   .reply-modal__input:focus,
   .reply-modal__textarea:focus {
     border-color: #93c5fd;
@@ -826,6 +858,119 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
     color: #64748b;
     line-height: 1.5;
     margin: 0;
+  }
+
+  /* ===== DARK MODE ===== */
+  :global([data-theme="dark"]) .action-btn {
+    color: #60a5fa;
+    border-color: #334155;
+    background: rgba(30, 41, 59, 0.8);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+
+  :global([data-theme="dark"]) .action-btn:hover {
+    background: #334155;
+  }
+
+  :global([data-theme="dark"]) .reading-pane__title {
+    color: #f1f5f9;
+  }
+
+  :global([data-theme="dark"]) .reading-pane__avatar {
+    background: #334155;
+    color: #94a3b8;
+  }
+
+  :global([data-theme="dark"]) .reading-pane__from-line {
+    color: #f1f5f9;
+  }
+
+  :global([data-theme="dark"]) .reading-pane__to-line,
+  :global([data-theme="dark"]) .reading-pane__date-block {
+    color: #94a3b8;
+  }
+
+  :global([data-theme="dark"]) .reading-pane__attachments {
+    border-top-color: #475569;
+  }
+
+  :global([data-theme="dark"]) .attachments__header {
+    color: #94a3b8;
+  }
+
+  :global([data-theme="dark"]) .attachment {
+    background: #1e293b;
+    border-color: #334155;
+    color: #e2e8f0;
+  }
+
+  :global([data-theme="dark"]) .attachment:hover {
+    background: #334155;
+    border-color: #475569;
+  }
+
+  :global([data-theme="dark"]) .attachment__size {
+    color: #94a3b8;
+  }
+
+  :global([data-theme="dark"]) .reply-modal {
+    background: #1e293b;
+  }
+
+  :global([data-theme="dark"]) .reply-modal__header {
+    border-bottom-color: #334155;
+  }
+
+  :global([data-theme="dark"]) .reply-modal__header h3 {
+    color: #f1f5f9;
+  }
+
+  :global([data-theme="dark"]) .reply-modal__close:hover {
+    background: #334155;
+    color: #e2e8f0;
+  }
+
+  :global([data-theme="dark"]) .reply-modal__field label {
+    color: #cbd5e1;
+  }
+
+  :global([data-theme="dark"]) .reply-modal__input,
+  :global([data-theme="dark"]) .reply-modal__textarea {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(148, 163, 184, 0.2);
+    color: #f1f5f9;
+  }
+
+  :global([data-theme="dark"]) .reply-modal__input--readonly {
+    background: rgba(255, 255, 255, 0.03);
+    color: #94a3b8;
+  }
+
+  :global([data-theme="dark"]) .reply-modal__input::placeholder,
+  :global([data-theme="dark"]) .reply-modal__textarea::placeholder {
+    color: #64748b;
+  }
+
+  :global([data-theme="dark"]) .reply-modal__cancel {
+    background: #1e293b;
+    border-color: #334155;
+    color: #94a3b8;
+  }
+
+  :global([data-theme="dark"]) .reply-modal__cancel:hover {
+    background: #334155;
+  }
+
+  :global([data-theme="dark"]) .success-modal__icon {
+    background: #064e3b;
+  }
+
+  :global([data-theme="dark"]) .success-modal__title {
+    color: #f1f5f9;
+  }
+
+  :global([data-theme="dark"]) .success-modal__text {
+    color: #94a3b8;
   }
 
   /* ===== MOBILE: back button ===== */

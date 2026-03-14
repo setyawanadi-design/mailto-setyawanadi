@@ -9,6 +9,7 @@ attachments:
   - name: "AdiSetyawan_Resume_en.pdf"
     url: "#"
     size: "186 KB"
+tags: ["career"]
 ---
 
 Dear Hiring Team,

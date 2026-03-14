@@ -1,5 +1,5 @@
 ---
-title: ""
+title: "just wondering"
 date: 2025-03-12
 image: ""
 ---

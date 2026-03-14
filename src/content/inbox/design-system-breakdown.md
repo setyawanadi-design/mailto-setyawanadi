@@ -4,6 +4,7 @@ from: "setyawanadi"
 fromEmail: "setyawanadi@hotmail.com"
 date: 2026-03-11
 preview: "A deep dive into the Frutiger Aero-inspired design tokens, color palette, and component architecture..."
+tags: ["design", "dev"]
 ---
 
 Every detail of this site is built on a small but intentional design system. Here's how it all fits together.

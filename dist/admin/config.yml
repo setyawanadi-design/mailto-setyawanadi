@@ -1,0 +1,152 @@
+backend:
+  name: github
+  repo: setyawanadi-design/mailto-setyawanadi
+  branch: main
+
+media_folder: public/uploads
+public_folder: /uploads
+
+collections:
+  - name: inbox
+    label: Inbox
+    folder: src/content/inbox
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: From, name: from, widget: string, default: "setyawanadi" }
+      - { label: From Email, name: fromEmail, widget: string, default: "setyawanadi@hotmail.com" }
+      - { label: Date, name: date, widget: datetime }
+      - { label: Preview, name: preview, widget: string }
+      - { label: Pinned, name: pinned, widget: boolean, default: false }
+      - label: Attachments
+        name: attachments
+        widget: list
+        required: false
+        fields:
+          - { label: Name, name: name, widget: string }
+          - { label: URL, name: url, widget: string }
+          - { label: Size, name: size, widget: string }
+      - { label: Body, name: body, widget: markdown }
+
+  - name: sent
+    label: Sent
+    folder: src/content/sent
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: From, name: from, widget: string, default: "setyawanadi" }
+      - { label: From Email, name: fromEmail, widget: string, default: "setyawanadi@hotmail.com" }
+      - { label: Date, name: date, widget: datetime }
+      - { label: Preview, name: preview, widget: string }
+      - { label: Pinned, name: pinned, widget: boolean, default: false }
+      - label: Attachments
+        name: attachments
+        widget: list
+        required: false
+        fields:
+          - { label: Name, name: name, widget: string }
+          - { label: URL, name: url, widget: string }
+          - { label: Size, name: size, widget: string }
+      - { label: Body, name: body, widget: markdown }
+
+  - name: drafts
+    label: Drafts
+    folder: src/content/drafts
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: From, name: from, widget: string, default: "setyawanadi" }
+      - { label: From Email, name: fromEmail, widget: string, default: "setyawanadi@hotmail.com" }
+      - { label: Date, name: date, widget: datetime }
+      - { label: Preview, name: preview, widget: string }
+      - { label: Pinned, name: pinned, widget: boolean, default: false }
+      - label: Attachments
+        name: attachments
+        widget: list
+        required: false
+        fields:
+          - { label: Name, name: name, widget: string }
+          - { label: URL, name: url, widget: string }
+          - { label: Size, name: size, widget: string }
+      - { label: Body, name: body, widget: markdown }
+
+  - name: notes
+    label: Notes
+    folder: src/content/notes
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: From, name: from, widget: string, default: "setyawanadi" }
+      - { label: From Email, name: fromEmail, widget: string, default: "setyawanadi@hotmail.com" }
+      - { label: Date, name: date, widget: datetime }
+      - { label: Preview, name: preview, widget: string }
+      - { label: Pinned, name: pinned, widget: boolean, default: false }
+      - label: Attachments
+        name: attachments
+        widget: list
+        required: false
+        fields:
+          - { label: Name, name: name, widget: string }
+          - { label: URL, name: url, widget: string }
+          - { label: Size, name: size, widget: string }
+      - { label: Body, name: body, widget: markdown }
+
+  - name: archive
+    label: Archive
+    folder: src/content/archive
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: From, name: from, widget: string, default: "setyawanadi" }
+      - { label: From Email, name: fromEmail, widget: string, default: "setyawanadi@hotmail.com" }
+      - { label: Date, name: date, widget: datetime }
+      - { label: Preview, name: preview, widget: string }
+      - { label: Pinned, name: pinned, widget: boolean, default: false }
+      - label: Attachments
+        name: attachments
+        widget: list
+        required: false
+        fields:
+          - { label: Name, name: name, widget: string }
+          - { label: URL, name: url, widget: string }
+          - { label: Size, name: size, widget: string }
+      - { label: Body, name: body, widget: markdown }
+
+  - name: starred
+    label: Starred
+    folder: src/content/starred
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: From, name: from, widget: string, default: "setyawanadi" }
+      - { label: From Email, name: fromEmail, widget: string, default: "setyawanadi@hotmail.com" }
+      - { label: Date, name: date, widget: datetime }
+      - { label: Preview, name: preview, widget: string }
+      - { label: Pinned, name: pinned, widget: boolean, default: false }
+      - label: Attachments
+        name: attachments
+        widget: list
+        required: false
+        fields:
+          - { label: Name, name: name, widget: string }
+          - { label: URL, name: url, widget: string }
+          - { label: Size, name: size, widget: string }
+      - { label: Body, name: body, widget: markdown }
+
+  - name: logs
+    label: Logs
+    folder: src/content/logs
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: Title, name: title, widget: string, required: false }
+      - { label: Date, name: date, widget: datetime }
+      - { label: Image, name: image, widget: image, required: false }
+      - { label: Image Alt, name: imageAlt, widget: string, required: false, default: "" }
+      - { label: Body, name: body, widget: markdown }

@@ -317,6 +317,15 @@ const feedFolders = [
     text-align: center;
   }
 
+  /* ===== DARK MODE ===== */
+  :global([data-theme="dark"]) .sidebar__item--active {
+    background: rgba(56, 189, 248, 0.1);
+  }
+
+  :global([data-theme="dark"]) .sidebar__compose {
+    border-color: #1d4ed8;
+  }
+
   @media (max-width: 768px) {
     .sidebar {
       position: fixed;
@@ -331,6 +340,10 @@ const feedFolders = [
       min-width: 240px;
       height: auto;
       background: #f0f7ff;
+    }
+
+    :global([data-theme="dark"]) .sidebar {
+      background: #0f172a;
     }
 
     .sidebar:global(.sidebar--open) {

@@ -4,6 +4,7 @@ from: "setyawanadi"
 fromEmail: "setyawanadi@hotmail.com"
 date: 2025-09-15
 preview: "A spreadsheet-based tracking system for managing POSM deployments across 20+ retail locations..."
+tags: ["dev", "career"]
 ---
 
 This project was built to solve a real problem: tracking Point of Sale Materials deployments across dozens of retail locations with no budget for enterprise software.

@@ -4,6 +4,7 @@ from: "setyawanadi"
 fromEmail: "setyawanadi@hotmail.com"
 date: 2026-03-08
 preview: "Working on a new workflow automation system to streamline field operations reporting..."
+tags: ["dev", "thoughts"]
 ---
 
 *This is a draft — work in progress.*

@@ -5,6 +5,7 @@ fromEmail: "setyawanadi@hotmail.com"
 date: 2026-03-12
 preview: "Hi! I'm Adi Setyawan — an operations professional with a passion for field team management..."
 pinned: true
+tags: ["personal"]
 ---
 
 Hi!

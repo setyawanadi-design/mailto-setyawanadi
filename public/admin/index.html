@@ -1,20 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex" />
-    <title>Sveltia CMS - Mailto Setyawanadi</title>
-    <link rel="cms-config-url" type="text/yaml" href="/admin/config.yml" />
+    <title>Content Manager — setyawanadi</title>
   </head>
   <body>
-    <script type="module" src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.mjs"></script>
-    <script type="module">
-      if (window.initCMS) {
-        window.initCMS();
-      } else {
-        window.addEventListener("load", () => window.initCMS && window.initCMS());
-      }
-    </script>
+    <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
   </body>
 </html>

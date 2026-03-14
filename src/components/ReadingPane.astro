@@ -236,8 +236,15 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
     const readingPane = document.getElementById("reading-pane");
 
     if (expandBtn && msgList && readingPane) {
+      // Restore expanded state from session
+      if (sessionStorage.getItem("reading-pane-expanded") === "true") {
+        readingPane.classList.add("reading-pane--expanded");
+        msgList.style.display = "none";
+      }
+
       expandBtn.addEventListener("click", () => {
         const isExpanded = readingPane.classList.toggle("reading-pane--expanded");
+        sessionStorage.setItem("reading-pane-expanded", String(isExpanded));
         if (isExpanded) {
           msgList.style.display = "none";
         } else {

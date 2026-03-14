@@ -393,6 +393,13 @@ img {
   font-weight: 700;
   letter-spacing: 0.08em;
   border-radius: 4px;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.email-signature__badge:hover {
+  background: #e2e8f0;
+  color: #1e293b;
 }
 
 /* ===== MOBILE RESPONSIVE ===== */

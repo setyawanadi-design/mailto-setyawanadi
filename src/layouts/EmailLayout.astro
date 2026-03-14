@@ -120,8 +120,11 @@ const pageTitle = `${currentFolder.charAt(0).toUpperCase() + currentFolder.slice
           sidebarOverlay?.classList.toggle("overlay--visible");
         }
 
+        const sidebarClose = document.getElementById("sidebar-close");
+
         menuBtn?.addEventListener("click", toggleSidebar);
         sidebarOverlay?.addEventListener("click", toggleSidebar);
+        sidebarClose?.addEventListener("click", toggleSidebar);
 
         // Compose modal
         const composeBtn = document.getElementById("compose-btn");
@@ -419,7 +422,7 @@ const pageTitle = `${currentFolder.charAt(0).toUpperCase() + currentFolder.slice
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.5);
-      z-index: 90;
+      z-index: 104;
       opacity: 0;
       pointer-events: none;
       transition: opacity var(--transition-normal);

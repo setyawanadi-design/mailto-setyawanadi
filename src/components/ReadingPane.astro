@@ -15,6 +15,7 @@ interface Props {
   attachments?: Attachment[];
   prevUrl?: string;
   nextUrl?: string;
+  folderUrl?: string;
 }
 
 const {
@@ -27,6 +28,7 @@ const {
   attachments = [],
   prevUrl,
   nextUrl,
+  folderUrl,
 } = Astro.props;
 
 const formattedDate = new Date(date).toLocaleDateString("en-US", {
@@ -44,7 +46,16 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
   <!-- Action bar -->
   <header class="reading-pane__actions">
     <div class="reading-pane__action-btns">
-      <!-- Expand button (FIRST) -->
+      <!-- Back button (mobile only) -->
+      {folderUrl && (
+        <a href={folderUrl} class="action-btn action-btn--back" aria-label="Back to list">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 19l-7-7 7-7"></path>
+          </svg>
+          <span>Back</span>
+        </a>
+      )}
+      <!-- Expand button -->
       <button class="action-btn action-btn--expand" id="expand-btn" title="Expand View" aria-label="Expand">
         <svg class="expand-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 3 21 3 21 9"></polyline>
@@ -138,11 +149,13 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
         <p class="email-signature__regards">Best regards,</p>
         <p class="email-signature__name">Adi Setyawan</p>
         <p class="email-signature__links">
+          <span>&#x2709;&#xFE0F;</span>
           <a href="mailto:setyawanadi@hotmail.com">setyawanadi@hotmail.com</a>
           <span class="email-signature__sep">&middot;</span>
+          <span>&#x1F310;</span>
           <a href="https://setyawanadi.netlify.app">setyawanadi.netlify.app</a>
         </p>
-        <p class="email-signature__badge">SENT VIA SVELTIA</p>
+        <a href="https://sveltiacms.app/en/" target="_blank" rel="noopener" class="email-signature__badge">SENT VIA SVELTIA</a>
       </div>
     </div>
 
@@ -230,10 +243,31 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
 
 <script>
   document.addEventListener("astro:page-load", () => {
+    // Apply nav slide direction on mobile (body only, not action bar)
+    const readingPane = document.getElementById("reading-pane");
+    const paneBody = readingPane?.querySelector(".reading-pane__body") as HTMLElement | null;
+    const navDir = sessionStorage.getItem("nav-direction");
+    if (navDir && paneBody) {
+      paneBody.classList.remove("slide-from-right", "slide-from-left");
+      paneBody.classList.add(navDir === "prev" ? "slide-from-left" : "slide-from-right");
+      sessionStorage.removeItem("nav-direction");
+    }
+
+    // Store direction when clicking prev/next arrows
+    document.querySelectorAll(".action-btn--nav").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const label = btn.getAttribute("aria-label");
+        if (label === "Previous") {
+          sessionStorage.setItem("nav-direction", "prev");
+        } else if (label === "Next") {
+          sessionStorage.setItem("nav-direction", "next");
+        }
+      });
+    });
+
     // Expand toggle
     const expandBtn = document.getElementById("expand-btn");
     const msgList = document.querySelector(".msg-list") as HTMLElement | null;
-    const readingPane = document.getElementById("reading-pane");
 
     if (expandBtn && msgList && readingPane) {
       // Restore expanded state from session
@@ -449,6 +483,25 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
     flex: 1;
     overflow-y: auto;
     padding: var(--spacing-xl);
+  }
+
+  /* Slide animations for prev/next navigation */
+  .reading-pane__body.slide-from-right {
+    animation: slideFromRight 0.25s ease-out;
+  }
+
+  .reading-pane__body.slide-from-left {
+    animation: slideFromLeft 0.25s ease-out;
+  }
+
+  @keyframes slideFromRight {
+    from { transform: translateX(40%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  @keyframes slideFromLeft {
+    from { transform: translateX(-40%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
   }
 
   /* ===== POST META ===== */
@@ -775,9 +828,38 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
     margin: 0;
   }
 
+  /* ===== MOBILE: back button ===== */
+  .action-btn--back {
+    display: none;
+    text-decoration: none;
+  }
+
   /* ===== RESPONSIVE ===== */
   @media (max-width: 768px) {
     .reading-pane {
+      position: fixed;
+      top: var(--toolbar-height);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 80;
+      height: auto;
+    }
+
+    /* Default: body slides from right on mobile (entering from message list) */
+    .reading-pane__body {
+      animation: slideFromRight 0.25s ease-out;
+    }
+
+    .action-btn--back {
+      display: flex;
+    }
+
+    .action-btn--back span {
+      display: inline;
+    }
+
+    .action-btn--expand {
       display: none;
     }
   }

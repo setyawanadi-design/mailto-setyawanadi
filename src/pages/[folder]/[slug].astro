@@ -98,6 +98,7 @@ export async function getStaticPaths() {
     attachments={selectedItem.data.attachments}
     prevUrl={prevUrl}
     nextUrl={nextUrl}
+    folderUrl={`/${folder}`}
   >
     <Content />
   </ReadingPane>

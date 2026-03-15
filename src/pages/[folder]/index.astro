@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content';
 import EmailLayout from '../../layouts/EmailLayout.astro';
 import MessageList from '../../components/MessageList.astro';
-import { folderMap } from '../../lib/folders';
+import { folderMap, getItemsByFolder, generatePreview, folderIcons } from '../../lib/folders';
 
 // Get folder from URL
 const { folder } = Astro.params;
@@ -12,11 +12,12 @@ if (!folderInfo) {
   return Astro.redirect('/inbox');
 }
 
-// Get collection items — for spam/trash show empty
+// Get all posts and filter by folder
 let items: any[] = [];
 if (folder !== 'spam' && folder !== 'trash') {
   try {
-    items = await getCollection(folderInfo.collection as any);
+    const allPosts = await getCollection('posts');
+    items = getItemsByFolder(allPosts as any, folder!);
   } catch {
     items = [];
   }
@@ -44,11 +45,15 @@ export function getStaticPaths() {
   <MessageList
     items={items.map((item: any) => ({
       slug: item.id,
-      data: item.data,
+      data: {
+        ...item.data,
+        preview: generatePreview(item.body),
+      },
     }))}
     folderName={folder!}
     folderLabel={folderInfo.label}
     basePath={`/${folder}`}
+    emptyIcon={folderIcons[folder!]}
   />
 
   <div class="welcome-pane">

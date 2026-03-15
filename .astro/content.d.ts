@@ -119,31 +119,7 @@ declare module 'astro:content' {
 		: any;
 
 	type DataEntryMap = {
-		"archive": Record<string, {
-  id: string;
-  body?: string;
-  collection: "archive";
-  data: InferEntrySchema<"archive">;
-  rendered?: RenderedContent;
-  filePath?: string;
-}>;
-"drafts": Record<string, {
-  id: string;
-  body?: string;
-  collection: "drafts";
-  data: InferEntrySchema<"drafts">;
-  rendered?: RenderedContent;
-  filePath?: string;
-}>;
-"inbox": Record<string, {
-  id: string;
-  body?: string;
-  collection: "inbox";
-  data: InferEntrySchema<"inbox">;
-  rendered?: RenderedContent;
-  filePath?: string;
-}>;
-"logs": Record<string, {
+		"logs": Record<string, {
   id: string;
   body?: string;
   collection: "logs";
@@ -151,27 +127,11 @@ declare module 'astro:content' {
   rendered?: RenderedContent;
   filePath?: string;
 }>;
-"notes": Record<string, {
+"posts": Record<string, {
   id: string;
   body?: string;
-  collection: "notes";
-  data: InferEntrySchema<"notes">;
-  rendered?: RenderedContent;
-  filePath?: string;
-}>;
-"sent": Record<string, {
-  id: string;
-  body?: string;
-  collection: "sent";
-  data: InferEntrySchema<"sent">;
-  rendered?: RenderedContent;
-  filePath?: string;
-}>;
-"starred": Record<string, {
-  id: string;
-  body?: string;
-  collection: "starred";
-  data: InferEntrySchema<"starred">;
+  collection: "posts";
+  data: InferEntrySchema<"posts">;
   rendered?: RenderedContent;
   filePath?: string;
 }>;

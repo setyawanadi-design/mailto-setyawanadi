@@ -10,10 +10,7 @@ interface Attachment {
 
 interface Props {
   title: string;
-  from: string;
-  fromEmail: string;
   to?: string;
-  toEmail?: string;
   date: Date;
   attachments?: Attachment[];
   prevUrl?: string;
@@ -23,10 +20,7 @@ interface Props {
 
 const {
   title,
-  from,
-  fromEmail,
   to = "visitor@visitor",
-  toEmail = "",
   date,
   attachments = [],
   prevUrl,
@@ -133,7 +127,7 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
       <div class="reading-pane__sender-row">
         <div class="reading-pane__sender-left">
           <div class="reading-pane__avatar">
-            {from.charAt(0).toUpperCase()}
+            S
           </div>
           <div>
             <p class="reading-pane__from-line">

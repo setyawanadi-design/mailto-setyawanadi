@@ -3,7 +3,7 @@ import { getCollection, render } from 'astro:content';
 import EmailLayout from '../../layouts/EmailLayout.astro';
 import MessageList from '../../components/MessageList.astro';
 import ReadingPane from '../../components/ReadingPane.astro';
-import { folderMap, sortMessages } from '../../lib/folders';
+import { folderMap, sortMessages, getItemsByFolder, generatePreview, folderIcons } from '../../lib/folders';
 
 const { folder, slug } = Astro.params;
 const folderInfo = folderMap[folder!];
@@ -12,13 +12,9 @@ if (!folderInfo) {
   return Astro.redirect('/inbox');
 }
 
-// Get all items from the collection
-let items: any[] = [];
-try {
-  items = await getCollection(folderInfo.collection as any);
-} catch {
-  items = [];
-}
+// Get all posts and filter by folder
+const allPosts = await getCollection('posts');
+const items = getItemsByFolder(allPosts as any, folder!);
 
 // Sort items
 const sortedItems = sortMessages(items as any);
@@ -36,23 +32,20 @@ const nextItem = selectedIndex < sortedItems.length - 1 ? sortedItems[selectedIn
 const prevUrl = prevItem ? `/${folder}/${prevItem.id}` : undefined;
 const nextUrl = nextItem ? `/${folder}/${nextItem.id}` : undefined;
 
-const { Content } = await render(selectedItem);
+const { Content } = await render(selectedItem as any);
 
 // Generate static paths for all folder/slug combos
 export async function getStaticPaths() {
-  const collections = ['inbox', 'sent', 'drafts', 'notes', 'archive', 'starred'];
+  const allPosts = await getCollection('posts');
+  const folders = Object.keys(folderMap);
   const paths: { params: { folder: string; slug: string } }[] = [];
 
-  for (const col of collections) {
-    try {
-      const items = await getCollection(col as any);
-      for (const item of items as any[]) {
-        paths.push({
-          params: { folder: col, slug: item.id },
-        });
-      }
-    } catch {
-      // Collection might be empty or not exist
+  for (const folder of folders) {
+    const items = getItemsByFolder(allPosts as any, folder);
+    for (const item of items) {
+      paths.push({
+        params: { folder, slug: item.id },
+      });
     }
   }
 
@@ -69,18 +62,20 @@ export async function getStaticPaths() {
   <MessageList
     items={sortedItems.map((item: any) => ({
       slug: item.id,
-      data: item.data,
+      data: {
+        ...item.data,
+        preview: generatePreview(item.body),
+      },
     }))}
     activeSlug={slug!}
     folderName={folder!}
     folderLabel={folderInfo.label}
     basePath={`/${folder}`}
+    emptyIcon={folderIcons[folder!]}
   />
 
   <ReadingPane
     title={selectedItem.data.title}
-    from={selectedItem.data.from}
-    fromEmail={selectedItem.data.fromEmail}
     date={selectedItem.data.date}
     attachments={selectedItem.data.attachments}
     prevUrl={prevUrl}

@@ -1,12 +1,10 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
-const emailSchema = z.object({
+const postSchema = z.object({
   title: z.string(),
-  from: z.string(),
-  fromEmail: z.string(),
   date: z.coerce.date(),
-  preview: z.string(),
+  category: z.enum(['inbox', 'sent', 'drafts', 'notes', 'archive']),
   image: z.string().optional(),
   pinned: z.boolean().default(false),
   tags: z.array(z.string()).default([]),
@@ -17,34 +15,9 @@ const emailSchema = z.object({
   })).default([]),
 });
 
-const inbox = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/inbox' }),
-  schema: emailSchema,
-});
-
-const sent = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/sent' }),
-  schema: emailSchema,
-});
-
-const drafts = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/drafts' }),
-  schema: emailSchema,
-});
-
-const notes = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/notes' }),
-  schema: emailSchema,
-});
-
-const archive = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/archive' }),
-  schema: emailSchema,
-});
-
-const starred = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/starred' }),
-  schema: emailSchema,
+const posts = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/posts' }),
+  schema: postSchema,
 });
 
 const logSchema = z.object({
@@ -57,4 +30,4 @@ const logs = defineCollection({
   schema: logSchema,
 });
 
-export const collections = { inbox, sent, drafts, notes, archive, starred, logs };
+export const collections = { posts, logs };

@@ -1,9 +1,7 @@
 ---
 title: "Welcome to my site!"
-from: "setyawanadi"
-fromEmail: "setyawanadi@hotmail.com"
 date: 2026-03-12
-preview: "welcome! this is my personal corner of the internet."
+category: inbox
 pinned: true
 tags: ["info"]
 ---

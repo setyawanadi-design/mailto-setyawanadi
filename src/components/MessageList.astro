@@ -3,8 +3,6 @@ interface MessageEntry {
   slug: string;
   data: {
     title: string;
-    from: string;
-    fromEmail: string;
     date: Date;
     preview: string;
     pinned?: boolean;
@@ -18,9 +16,10 @@ interface Props {
   folderName: string;
   folderLabel: string;
   basePath: string;
+  emptyIcon?: string;
 }
 
-const { items, activeSlug, folderName, folderLabel, basePath } = Astro.props;
+const { items, activeSlug, folderName, folderLabel, basePath, emptyIcon } = Astro.props;
 
 // Static fallback — always safe at build time (no relative "today" logic)
 function formatDateStatic(date: Date): string {
@@ -53,19 +52,23 @@ const sortedItems = [...items].sort((a, b) => {
     {
       sortedItems.length === 0 && (
         <div class="msg-list__empty">
-          <svg
-            width="40"
-            height="40"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1"
-            stroke-linecap="round"
-            opacity="0.3"
-          >
-            <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
-            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
-          </svg>
+          {emptyIcon ? (
+            <span class="msg-list__empty-icon" set:html={emptyIcon} />
+          ) : (
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1"
+              stroke-linecap="round"
+              opacity="0.3"
+            >
+              <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+              <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+            </svg>
+          )}
           <p>No messages in {folderLabel}</p>
         </div>
       )
@@ -174,6 +177,12 @@ const sortedItems = [...items].sort((a, b) => {
     color: var(--text-muted);
     font-size: var(--font-size-sm);
     height: 200px;
+  }
+
+  .msg-list__empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   /* Message item */

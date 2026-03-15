@@ -3,25 +3,24 @@ import { getCollection } from 'astro:content';
 import type { APIContext } from 'astro';
 
 export async function GET(context: APIContext) {
-  const inbox = await getCollection('inbox');
-  const sent = await getCollection('sent');
+  const posts = await getCollection('posts');
   const logs = await getCollection('logs');
 
-  const emailItems = [...inbox, ...sent].map((item: any) => ({
+  const postItems = (posts as any[]).map((item) => ({
     title: item.data.title,
     pubDate: new Date(item.data.date),
-    description: item.data.preview,
-    link: `/${item.collection}/${item.id}`,
+    description: (item.body || '').replace(/[#*_`\[\]()>-]/g, '').trim().slice(0, 160),
+    link: `/${item.data.category}/${item.id}`,
   }));
 
-  const logItems = logs.map((item: any) => ({
+  const logItems = (logs as any[]).map((item) => ({
     title: item.data.title || 'Log',
     pubDate: new Date(item.data.date),
     description: (item.body || '').slice(0, 160),
     link: `/logs/${item.id}`,
   }));
 
-  const allItems = [...emailItems, ...logItems].sort(
+  const allItems = [...postItems, ...logItems].sort(
     (a, b) => b.pubDate.getTime() - a.pubDate.getTime()
   );
 

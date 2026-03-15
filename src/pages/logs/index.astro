@@ -101,7 +101,16 @@ const renderedItems = await Promise.all(
 
     {renderedItems.length === 0 && (
       <div class="logs-feed__empty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.3">
+          <line x1="8" y1="6" x2="21" y2="6"/>
+          <line x1="8" y1="12" x2="21" y2="12"/>
+          <line x1="8" y1="18" x2="21" y2="18"/>
+          <line x1="3" y1="6" x2="3.01" y2="6"/>
+          <line x1="3" y1="12" x2="3.01" y2="12"/>
+          <line x1="3" y1="18" x2="3.01" y2="18"/>
+        </svg>
         <p>No logs yet.</p>
+        <p class="logs-feed__empty-hint">Short thoughts and updates will show up here.</p>
       </div>
     )}
   </div>
@@ -480,9 +489,23 @@ const renderedItems = await Promise.all(
   .logs-feed__empty {
     max-width: 600px;
     margin: 0 auto;
-    padding: var(--spacing-2xl);
+    padding: var(--spacing-2xl) var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
     text-align: center;
     color: var(--text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .logs-feed__empty p {
+    margin: 0;
+  }
+
+  .logs-feed__empty-hint {
+    font-size: var(--font-size-xs);
+    color: var(--text-detail-secondary);
   }
 
   /* ===== LOG ENTRY ===== */

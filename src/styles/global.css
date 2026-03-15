@@ -485,6 +485,13 @@ img {
   text-decoration: underline;
 }
 
+.email-signature__icon {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  color: var(--text-muted);
+}
+
 .email-signature__sep {
   color: var(--border-separator);
   font-size: var(--font-size-xs);

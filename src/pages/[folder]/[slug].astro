@@ -3,19 +3,9 @@ import { getCollection, render } from 'astro:content';
 import EmailLayout from '../../layouts/EmailLayout.astro';
 import MessageList from '../../components/MessageList.astro';
 import ReadingPane from '../../components/ReadingPane.astro';
+import { folderMap, sortMessages } from '../../lib/folders';
 
 const { folder, slug } = Astro.params;
-
-// Map folder names to collection names
-const folderMap: Record<string, { collection: string; label: string }> = {
-  inbox: { collection: 'inbox', label: 'Inbox' },
-  sent: { collection: 'sent', label: 'Sent' },
-  drafts: { collection: 'drafts', label: 'Drafts' },
-  notes: { collection: 'notes', label: 'Notes' },
-  archive: { collection: 'archive', label: 'Archive' },
-  starred: { collection: 'starred', label: 'Starred' },
-};
-
 const folderInfo = folderMap[folder!];
 
 if (!folderInfo) {
@@ -31,11 +21,7 @@ try {
 }
 
 // Sort items
-const sortedItems = items.sort((a: any, b: any) => {
-  if (a.data.pinned && !b.data.pinned) return -1;
-  if (!a.data.pinned && b.data.pinned) return 1;
-  return new Date(b.data.date).getTime() - new Date(a.data.date).getTime();
-});
+const sortedItems = sortMessages(items as any);
 
 // Find selected item and neighbors
 const selectedIndex = sortedItems.findIndex((item: any) => item.id === slug);

@@ -3,12 +3,13 @@ import { ClientRouter } from "astro:transitions";
 import "../styles/global.css";
 import Toolbar from "../components/Toolbar.astro";
 import Sidebar from "../components/Sidebar.astro";
+import FormModal from "../components/FormModal.astro";
+import { FORMSPREE_URL } from "../lib/folders";
 
 interface Props {
   title?: string;
   description?: string;
   currentFolder?: string;
-  currentSlug?: string;
   ogImage?: string;
 }
 
@@ -16,7 +17,6 @@ const {
   title = "setyawanadi",
   description = "Personal site of Adi Setyawan — designer, developer, and creative thinker.",
   currentFolder = "inbox",
-  currentSlug = "",
   ogImage,
 } = Astro.props;
 
@@ -30,37 +30,112 @@ const pageTitle = `${currentFolder.charAt(0).toUpperCase() + currentFolder.slice
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <meta name="author" content="Adi Setyawan" />
+    <link rel="canonical" href={Astro.url.href} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
+    <meta property="og:url" content={Astro.url.href} />
     <meta property="og:type" content="website" />
     {ogImage && <meta property="og:image" content={ogImage} />}
     <meta name="twitter:card" content={ogImage ? "summary_large_image" : "summary"} />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <title>{pageTitle}</title>
     <ClientRouter />
     <script is:inline>
-      // Apply theme before paint to prevent flash
+      // Apply theme + expand state before paint to prevent flash
       (function() {
         var stored = localStorage.getItem('theme');
         var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         if (theme === 'dark') {
           document.documentElement.setAttribute('data-theme', 'dark');
         }
+        if (sessionStorage.getItem('expanded') === '1') {
+          document.documentElement.setAttribute('data-expanded', '');
+        }
       })();
 
-      // Persist theme across View Transitions (client-side navigation)
-      document.addEventListener('astro:before-swap', function(e) {
-        var stored = localStorage.getItem('theme');
-        var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        if (theme === 'dark') {
-          e.newDocument.documentElement.setAttribute('data-theme', 'dark');
-        }
-      });
+      // Register swap handler only once (is:inline re-runs on View Transitions)
+      if (!window.__swapRegistered) {
+        window.__swapRegistered = true;
+        document.addEventListener('astro:before-swap', function(e) {
+          window.__astroNav = true;
+          // Remove splash from incoming page
+          var splash = e.newDocument.getElementById('splash');
+          if (splash) splash.remove();
+          // Carry theme to new document
+          var stored = localStorage.getItem('theme');
+          var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          if (theme === 'dark') {
+            e.newDocument.documentElement.setAttribute('data-theme', 'dark');
+          }
+          // Carry expand state to new document
+          if (sessionStorage.getItem('expanded') === '1') {
+            e.newDocument.documentElement.setAttribute('data-expanded', '');
+          }
+        });
+        // Restore expand state after swap completes (ensures it's applied)
+        document.addEventListener('astro:after-swap', function() {
+          if (sessionStorage.getItem('expanded') === '1') {
+            document.documentElement.setAttribute('data-expanded', '');
+          } else {
+            document.documentElement.removeAttribute('data-expanded');
+          }
+        });
+      }
     </script>
   </head>
   <body>
+    <!-- Loading splash (hard page loads only — skipped during View Transition navigations) -->
+    <div class="splash" id="splash" aria-hidden="true">
+      <div class="splash__content">
+        <span class="splash__logo">📧</span>
+        <p class="splash__text" id="splash-text">Accessing setyawanadi...</p>
+        <div class="splash__progress">
+          <div class="splash__progress-bar" id="splash-bar"></div>
+        </div>
+      </div>
+    </div>
+    <script is:inline>
+      (function() {
+        var splash = document.getElementById('splash');
+        if (!splash) return;
+        // Only show on hard page loads (initial visit or refresh)
+        // window.__astroNav is set by astro:before-swap during View Transitions
+        if (window.__astroNav) {
+          splash.remove();
+          return;
+        }
+        var text = document.getElementById('splash-text');
+        var bar = document.getElementById('splash-bar');
+        var steps = [
+          { msg: 'Accessing setyawanadi...', pct: 30, delay: 600 },
+          { msg: 'Authenticating...', pct: 60, delay: 500 },
+          { msg: 'Loading inbox...', pct: 90, delay: 400 },
+          { msg: 'Done!', pct: 100, delay: 300 }
+        ];
+        var i = 0;
+        bar.style.width = '10%';
+        function next() {
+          if (i >= steps.length) {
+            splash.classList.add('splash--fade');
+            setTimeout(function() { splash.remove(); }, 300);
+            return;
+          }
+          var s = steps[i];
+          text.textContent = s.msg;
+          bar.style.width = s.pct + '%';
+          i++;
+          setTimeout(next, s.delay);
+        }
+        setTimeout(next, 400);
+      })();
+    </script>
+
+    <a href="#main-content" class="skip-link">Skip to content</a>
     <div class="app-shell" id="app-shell">
       <!-- Top toolbar -->
       <Toolbar />
@@ -74,69 +149,56 @@ const pageTitle = `${currentFolder.charAt(0).toUpperCase() + currentFolder.slice
         <Sidebar currentFolder={currentFolder} />
 
         <!-- Content slot (list + detail) -->
-        <slot />
+        <main id="main-content">
+          <slot />
+        </main>
       </div>
     </div>
 
     <!-- Compose Modal -->
-    <div class="compose-overlay" id="compose-overlay">
-      <div class="compose-modal">
-        <div class="compose-modal__header">
-          <h3>New Message</h3>
-          <button class="compose-modal__close" id="compose-close" aria-label="Close">&times;</button>
-        </div>
-        <form
-          class="compose-modal__form"
-          id="compose-form"
-          action="https://formspree.io/f/xjgeajby"
-          method="POST"
-        >
-          <input type="hidden" name="_subject" value="New Message from Website" />
-          <div class="compose-modal__field">
-            <label for="compose-to">To</label>
-            <input type="text" id="compose-to" value="setyawanadi" readonly class="compose-modal__input compose-modal__input--readonly" />
-          </div>
-          <div class="compose-modal__field">
-            <label for="compose-from">From</label>
-            <input type="email" id="compose-from" name="email" placeholder="your@email.com" required class="compose-modal__input" />
-          </div>
-          <div class="compose-modal__field">
-            <label for="compose-subject">Subject</label>
-            <input type="text" id="compose-subject" name="_subject" placeholder="What's this about?" required class="compose-modal__input" />
-          </div>
-          <div class="compose-modal__field">
-            <label for="compose-message">Message</label>
-            <textarea id="compose-message" name="message" rows="10" placeholder="Write your message..." required class="compose-modal__textarea"></textarea>
-          </div>
-          <div class="compose-modal__actions">
-            <button type="button" class="compose-modal__cancel" id="compose-cancel">Cancel</button>
-            <button type="submit" class="compose-modal__send" id="compose-submit">Send Message</button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <FormModal
+      id="compose"
+      title="New Message"
+      formAction={FORMSPREE_URL}
+      showToField={true}
+      textareaRows={10}
+      submitLabel="Send Message"
+    />
 
-    <!-- Compose Success Modal -->
-    <div class="compose-overlay" id="compose-success-overlay">
-      <div class="compose-modal compose-success-modal">
-        <div class="compose-success__content">
-          <div class="compose-success__icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
+    <!-- Keyboard Shortcuts Cheat Sheet -->
+    <div class="shortcuts-overlay" id="shortcuts-overlay">
+      <div class="shortcuts-modal" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
+        <div class="shortcuts-modal__header">
+          <h3 id="shortcuts-title">Keyboard Shortcuts</h3>
+          <button class="shortcuts-modal__close" id="shortcuts-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="shortcuts-modal__body">
+          <div class="shortcuts-group">
+            <h4>Navigation</h4>
+            <div class="shortcut-row"><kbd>J</kbd><span>Next message</span></div>
+            <div class="shortcut-row"><kbd>K</kbd><span>Previous message</span></div>
+            <div class="shortcut-row"><kbd>U</kbd><span>Back to list</span></div>
           </div>
-          <h3 class="compose-success__title">Message Sent!</h3>
-          <p class="compose-success__text">Your message has been delivered successfully. Thank you for reaching out!</p>
-          <button class="compose-modal__send" id="compose-success-close" style="margin-top: 8px;">Done</button>
+          <div class="shortcuts-group">
+            <h4>Actions</h4>
+            <div class="shortcut-row"><kbd>R</kbd><span>Reply</span></div>
+            <div class="shortcut-row"><kbd>C</kbd><span>Compose</span></div>
+            <div class="shortcut-row"><kbd>E</kbd><span>Expand / Collapse</span></div>
+            <div class="shortcut-row"><kbd>F</kbd><span>Forward / Share</span></div>
+          </div>
+          <div class="shortcuts-group">
+            <h4>General</h4>
+            <div class="shortcut-row"><kbd>?</kbd><span>Show shortcuts</span></div>
+            <div class="shortcut-row"><kbd>D</kbd><span>Toggle dark mode</span></div>
+            <div class="shortcut-row"><kbd>Esc</kbd><span>Close overlay</span></div>
+          </div>
         </div>
       </div>
     </div>
 
     <script>
-      // Re-binds on every client-side navigation (View Transitions)
+      // Element click handlers — re-bind on each navigation since DOM elements get replaced
       document.addEventListener("astro:page-load", () => {
-        // Theme toggle
         const themeToggle = document.getElementById("theme-toggle");
         themeToggle?.addEventListener("click", () => {
           const isDark = document.documentElement.getAttribute("data-theme") === "dark";
@@ -164,81 +226,185 @@ const pageTitle = `${currentFolder.charAt(0).toUpperCase() + currentFolder.slice
         sidebarOverlay?.addEventListener("click", toggleSidebar);
         sidebarClose?.addEventListener("click", toggleSidebar);
 
-        // Compose modal
         const composeBtn = document.getElementById("compose-btn");
-        const composeOverlay = document.getElementById("compose-overlay");
-        const composeClose = document.getElementById("compose-close");
-        const composeCancel = document.getElementById("compose-cancel");
-        const composeForm = document.getElementById("compose-form") as HTMLFormElement | null;
-        const composeSubmit = document.getElementById("compose-submit");
-
-        const composeSuccessOverlay = document.getElementById("compose-success-overlay");
-        const composeSuccessClose = document.getElementById("compose-success-close");
-
-        function openCompose() {
-          composeOverlay?.classList.add("compose-overlay--visible");
-        }
-        function closeCompose() {
-          composeOverlay?.classList.remove("compose-overlay--visible");
-        }
-        function openComposeSuccess() {
-          composeSuccessOverlay?.classList.add("compose-overlay--visible");
-        }
-        function closeComposeSuccess() {
-          composeSuccessOverlay?.classList.remove("compose-overlay--visible");
-        }
-
-        composeBtn?.addEventListener("click", openCompose);
-        composeClose?.addEventListener("click", closeCompose);
-        composeCancel?.addEventListener("click", closeCompose);
-        composeOverlay?.addEventListener("click", (e) => {
-          if (e.target === composeOverlay) closeCompose();
+        composeBtn?.addEventListener("click", () => {
+          document.dispatchEvent(new CustomEvent('form-modal:open:compose'));
         });
 
-        composeSuccessClose?.addEventListener("click", closeComposeSuccess);
-        composeSuccessOverlay?.addEventListener("click", (e) => {
-          if (e.target === composeSuccessOverlay) closeComposeSuccess();
-        });
+        const shortcutsBtn = document.getElementById("shortcuts-btn");
+        const shortcutsClose = document.getElementById("shortcuts-close");
+        const shortcutsOverlay = document.getElementById("shortcuts-overlay");
 
-        composeForm?.addEventListener("submit", async (e) => {
+        shortcutsBtn?.addEventListener("click", () => {
+          shortcutsOverlay?.classList.add("shortcuts-overlay--visible");
+        });
+        shortcutsClose?.addEventListener("click", () => {
+          shortcutsOverlay?.classList.remove("shortcuts-overlay--visible");
+        });
+        shortcutsOverlay?.addEventListener("click", (e) => {
+          if (e.target === shortcutsOverlay) shortcutsOverlay.classList.remove("shortcuts-overlay--visible");
+        });
+      });
+
+      // Keyboard shortcuts — register ONCE on document (persists across View Transitions)
+      document.addEventListener("keydown", (e) => {
+        const tag = (e.target as HTMLElement).tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+        if (document.querySelector(".form-modal__overlay--visible")) return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+        const key = e.key.toLowerCase();
+        const shortcutsOverlay = document.getElementById("shortcuts-overlay");
+
+        if (key === "escape") {
+          shortcutsOverlay?.classList.remove("shortcuts-overlay--visible");
+          return;
+        }
+
+        if (key === "?") {
           e.preventDefault();
+          shortcutsOverlay?.classList.toggle("shortcuts-overlay--visible");
+          return;
+        }
 
-          if (composeSubmit) {
-            composeSubmit.textContent = "Sending...";
-            (composeSubmit as HTMLButtonElement).disabled = true;
+        if (shortcutsOverlay?.classList.contains("shortcuts-overlay--visible")) return;
+
+        switch (key) {
+          case "j": {
+            const nextBtn = document.querySelector('.action-btn--nav[aria-label="Next"]') as HTMLAnchorElement;
+            if (nextBtn?.getAttribute("aria-disabled") !== "true") nextBtn?.click();
+            break;
           }
-
-          const formData = new FormData(composeForm);
-
-          try {
-            const response = await fetch(composeForm.action, {
-              method: "POST",
-              body: formData,
-              headers: { Accept: "application/json" },
-            });
-
-            if (response.ok) {
-              closeCompose();
-              openComposeSuccess();
-              composeForm.reset();
+          case "k": {
+            const prevBtn = document.querySelector('.action-btn--nav[aria-label="Previous"]') as HTMLAnchorElement;
+            if (prevBtn?.getAttribute("aria-disabled") !== "true") prevBtn?.click();
+            break;
+          }
+          case "u": {
+            const backBtn = document.querySelector(".action-btn--back") as HTMLAnchorElement;
+            if (backBtn) {
+              backBtn.click();
             } else {
-              alert("Failed to send message. Please try again.");
+              const activeItem = document.querySelector(".sidebar__item--active") as HTMLAnchorElement;
+              if (activeItem) window.location.href = activeItem.href;
             }
-          } catch {
-            alert("Network error. Please try again.");
-          } finally {
-            if (composeSubmit) {
-              composeSubmit.textContent = "Send Message";
-              (composeSubmit as HTMLButtonElement).disabled = false;
-            }
+            break;
           }
-        });
+          case "r": {
+            const replyBtn = document.getElementById("reply-btn");
+            if (replyBtn) {
+              e.preventDefault();
+              replyBtn.click();
+            }
+            break;
+          }
+          case "c": {
+            e.preventDefault();
+            document.dispatchEvent(new CustomEvent('form-modal:open:compose'));
+            break;
+          }
+          case "e": {
+            const expandBtn = document.getElementById("expand-btn");
+            expandBtn?.click();
+            break;
+          }
+          case "f": {
+            const fwdBtn = document.querySelector(".forward-btn") as HTMLElement;
+            fwdBtn?.click();
+            break;
+          }
+          case "d": {
+            document.getElementById("theme-toggle")?.click();
+            break;
+          }
+        }
       });
     </script>
   </body>
 </html>
 
 <style>
+  /* ===== LOADING SPLASH ===== */
+  .splash {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: var(--bg-detail);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+  }
+
+  .splash--fade {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .splash__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-lg);
+    text-align: center;
+  }
+
+  .splash__logo {
+    font-size: 36px;
+    line-height: 1;
+    animation: splashPulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes splashPulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+  }
+
+  .splash__text {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    font-weight: 500;
+    min-width: 200px;
+  }
+
+  .splash__progress {
+    width: 200px;
+    height: 3px;
+    background: var(--border-detail);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .splash__progress-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--text-action);
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
+
+  .skip-link {
+    position: absolute;
+    top: -100%;
+    left: var(--spacing-md);
+    z-index: 200;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: var(--accent);
+    color: #fff;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .skip-link:focus {
+    top: var(--spacing-sm);
+  }
+
+  #main-content {
+    display: contents;
+  }
+
   .app-shell {
     display: flex;
     flex-direction: column;
@@ -258,8 +424,8 @@ const pageTitle = `${currentFolder.charAt(0).toUpperCase() + currentFolder.slice
     display: none;
   }
 
-  /* Compose Modal */
-  .compose-overlay {
+  /* ===== SHORTCUTS MODAL ===== */
+  .shortcuts-overlay {
     display: none;
     position: fixed;
     inset: 0;
@@ -270,268 +436,95 @@ const pageTitle = `${currentFolder.charAt(0).toUpperCase() + currentFolder.slice
     justify-content: center;
   }
 
-  .compose-overlay--visible {
+  .shortcuts-overlay--visible {
     display: flex;
   }
 
-  .compose-modal {
-    background: #fff;
+  .shortcuts-modal {
+    background: var(--bg-detail);
     border-radius: 16px;
     box-shadow: 0 24px 48px rgba(0, 0, 0, 0.16);
     width: 90%;
-    max-width: 520px;
-    max-height: 90vh;
-    overflow-y: auto;
-    animation: modalIn 0.2s ease-out;
+    max-width: 420px;
+    animation: shortcutsIn 0.2s ease-out;
   }
 
-  @keyframes modalIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95) translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
+  @keyframes shortcutsIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
   }
 
-  .compose-modal__header {
+  .shortcuts-modal__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: var(--spacing-lg) var(--spacing-xl);
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--border-detail);
   }
 
-  .compose-modal__header h3 {
+  .shortcuts-modal__header h3 {
     margin: 0;
     font-size: var(--font-size-lg);
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-primary);
   }
 
-  .compose-modal__close {
+  .shortcuts-modal__close {
     background: none;
     border: none;
     font-size: 1.5rem;
-    color: #94a3b8;
+    color: var(--text-muted);
     cursor: pointer;
     padding: 4px 8px;
     border-radius: 8px;
     line-height: 1;
   }
 
-  .compose-modal__close:hover {
-    background: #f1f5f9;
-    color: #475569;
+  .shortcuts-modal__close:hover {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
   }
 
-  .compose-modal__form {
+  .shortcuts-modal__body {
     padding: var(--spacing-lg) var(--spacing-xl);
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: var(--spacing-lg);
   }
 
-  .compose-modal__field {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-  }
-
-  .compose-modal__field label {
+  .shortcuts-group h4 {
     font-size: var(--font-size-xs);
     font-weight: 600;
-    color: #64748b;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    margin-bottom: var(--spacing-sm);
   }
 
-  .compose-modal__input,
-  .compose-modal__textarea {
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    font-size: var(--font-size-sm);
-    font-family: var(--font-family);
-    color: #0f172a;
-    transition: border-color var(--transition-fast);
-    outline: none;
-  }
-
-  .compose-modal__input::placeholder,
-  .compose-modal__textarea::placeholder {
-    color: #cbd5e1;
-  }
-
-  .compose-modal__input:focus,
-  .compose-modal__textarea:focus {
-    border-color: #93c5fd;
-    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
-  }
-
-  .compose-modal__input--readonly {
-    background: #f8fafc;
-    color: #64748b;
-    cursor: not-allowed;
-  }
-
-  .compose-modal__textarea {
-    resize: vertical;
-    min-height: 140px;
-  }
-
-  .compose-modal__actions {
+  .shortcut-row {
     display: flex;
-    gap: var(--spacing-sm);
-    justify-content: flex-end;
-    padding-top: var(--spacing-sm);
-  }
-
-  .compose-modal__cancel {
-    padding: 8px 16px;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    background: #fff;
-    color: #64748b;
-    font-size: var(--font-size-sm);
-    font-weight: 500;
-    cursor: pointer;
-    transition: background var(--transition-fast);
-  }
-
-  .compose-modal__cancel:hover {
-    background: #f1f5f9;
-  }
-
-  .compose-modal__send {
-    padding: 8px 20px;
-    border: 1px solid #1e70bf;
-    border-radius: 10px;
-    background: linear-gradient(to bottom, #7abcff 0%, #60abf8 44%, #4096ee 100%);
-    color: #fff;
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    cursor: pointer;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.15);
-    transition: all 0.15s ease;
-  }
-
-  .compose-modal__send:hover {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
-  }
-
-  .compose-modal__send:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  .compose-success-modal {
-    max-width: 380px;
-    text-align: center;
-  }
-
-  .compose-success__content {
-    padding: var(--spacing-2xl) var(--spacing-xl);
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: var(--spacing-md);
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
   }
 
-  .compose-success__icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: #f0fdf4;
-    display: flex;
+  .shortcut-row kbd {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    animation: popIn 0.3s ease-out;
-  }
-
-  @keyframes popIn {
-    from { transform: scale(0.5); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
-
-  .compose-success__title {
-    margin: 0;
-    font-size: var(--font-size-xl);
-    font-weight: 700;
-    color: #0f172a;
-  }
-
-  .compose-success__text {
-    margin: 0;
-    font-size: var(--font-size-sm);
-    color: #64748b;
-    line-height: 1.5;
-  }
-
-  /* ===== DARK MODE ===== */
-  :global([data-theme="dark"]) .compose-modal {
-    background: #1e293b;
-  }
-
-  :global([data-theme="dark"]) .compose-modal__header {
-    border-bottom-color: #334155;
-  }
-
-  :global([data-theme="dark"]) .compose-modal__header h3 {
-    color: #f1f5f9;
-  }
-
-  :global([data-theme="dark"]) .compose-modal__close:hover {
-    background: #334155;
-    color: #e2e8f0;
-  }
-
-  :global([data-theme="dark"]) .compose-modal__field label {
-    color: #cbd5e1;
-  }
-
-  :global([data-theme="dark"]) .compose-modal__input,
-  :global([data-theme="dark"]) .compose-modal__textarea {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(148, 163, 184, 0.2);
-    color: #f1f5f9;
-  }
-
-  :global([data-theme="dark"]) .compose-modal__input--readonly {
-    background: rgba(255, 255, 255, 0.03);
-    color: #94a3b8;
-  }
-
-  :global([data-theme="dark"]) .compose-modal__input::placeholder,
-  :global([data-theme="dark"]) .compose-modal__textarea::placeholder {
-    color: #64748b;
-  }
-
-  :global([data-theme="dark"]) .compose-modal__cancel {
-    background: #1e293b;
-    border-color: #334155;
-    color: #94a3b8;
-  }
-
-  :global([data-theme="dark"]) .compose-modal__cancel:hover {
-    background: #334155;
-  }
-
-  :global([data-theme="dark"]) .compose-success__icon {
-    background: #064e3b;
-  }
-
-  :global([data-theme="dark"]) .compose-success__title {
-    color: #f1f5f9;
-  }
-
-  :global([data-theme="dark"]) .compose-success__text {
-    color: #94a3b8;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 8px;
+    background: var(--bg-code);
+    border: 1px solid var(--border-detail);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--text-primary);
+    box-shadow: 0 1px 0 var(--border-detail);
   }
 
   @media (max-width: 768px) {
@@ -550,5 +543,15 @@ const pageTitle = `${currentFolder.charAt(0).toUpperCase() + currentFolder.slice
       opacity: 1;
       pointer-events: auto;
     }
+  }
+
+  /* Expanded mode: hide message list */
+  html[data-expanded] .msg-list {
+    display: none;
+  }
+
+  html[data-expanded] .reading-pane {
+    width: 100%;
+    flex: 1;
   }
 </style>

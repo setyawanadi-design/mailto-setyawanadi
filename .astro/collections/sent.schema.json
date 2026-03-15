@@ -1,85 +1,71 @@
 {
-  "$ref": "#/definitions/sent",
-  "definitions": {
-    "sent": {
-      "type": "object",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "from": {
-          "type": "string"
-        },
-        "fromEmail": {
-          "type": "string"
-        },
-        "date": {
-          "anyOf": [
-            {
-              "type": "string",
-              "format": "date-time"
-            },
-            {
-              "type": "string",
-              "format": "date"
-            },
-            {
-              "type": "integer",
-              "format": "unix-time"
-            }
-          ]
-        },
-        "preview": {
-          "type": "string"
-        },
-        "pinned": {
-          "type": "boolean",
-          "default": false
-        },
-        "tags": {
-          "type": "array",
-          "items": {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "from": {
+      "type": "string"
+    },
+    "fromEmail": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "preview": {
+      "type": "string"
+    },
+    "pinned": {
+      "default": false,
+      "type": "boolean"
+    },
+    "tags": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "attachments": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
             "type": "string"
           },
-          "default": []
-        },
-        "attachments": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "url": {
-                "type": "string"
-              },
-              "size": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "name",
-              "url",
-              "size"
-            ],
-            "additionalProperties": false
+          "url": {
+            "type": "string"
           },
-          "default": []
+          "size": {
+            "type": "string"
+          }
         },
-        "$schema": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "title",
-        "from",
-        "fromEmail",
-        "date",
-        "preview"
-      ],
-      "additionalProperties": false
+        "required": [
+          "name",
+          "url",
+          "size"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "$schema": {
+      "type": "string"
     }
   },
-  "$schema": "http://json-schema.org/draft-07/schema#"
+  "required": [
+    "title",
+    "from",
+    "fromEmail",
+    "date",
+    "preview",
+    "pinned",
+    "tags",
+    "attachments"
+  ],
+  "additionalProperties": false
 }

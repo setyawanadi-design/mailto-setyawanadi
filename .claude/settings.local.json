@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(curl -sS \"https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js\")",
+      "Bash(openssl dgst:*)",
+      "Bash(openssl base64:*)"
+    ]
+  }
+}

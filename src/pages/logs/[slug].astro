@@ -66,27 +66,27 @@ const description = snippet || title;
   }
 
   .log-single__card {
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: var(--bg-detail);
+    border: 1px solid var(--border-detail);
     border-radius: 16px;
     padding: var(--spacing-lg);
   }
 
   .log-single__date {
     font-size: var(--font-size-xs);
-    color: #94a3b8;
+    color: var(--text-muted);
     display: block;
   }
 
   .log-single__title {
     font-size: var(--font-size-2xl);
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
     margin: 0 0 var(--spacing-sm);
   }
 
   .log-single__body {
-    color: #334155;
+    color: var(--text-secondary);
     line-height: 1.6;
     font-size: var(--font-size-base);
   }
@@ -109,38 +109,12 @@ const description = snippet || title;
     gap: var(--spacing-xs);
     margin-top: var(--spacing-lg);
     font-size: var(--font-size-sm);
-    color: #64748b;
+    color: var(--text-detail-secondary);
     text-decoration: none;
     transition: color var(--transition-fast);
   }
 
   .log-single__back:hover {
-    color: #0f172a;
-  }
-
-  /* ===== DARK MODE ===== */
-  :global([data-theme="dark"]) .log-single__card {
-    background: #1e293b;
-    border-color: rgba(51, 65, 85, 0.4);
-  }
-
-  :global([data-theme="dark"]) .log-single__date {
-    color: #64748b;
-  }
-
-  :global([data-theme="dark"]) .log-single__title {
-    color: #f1f5f9;
-  }
-
-  :global([data-theme="dark"]) .log-single__body {
-    color: #cbd5e1;
-  }
-
-  :global([data-theme="dark"]) .log-single__back {
-    color: #94a3b8;
-  }
-
-  :global([data-theme="dark"]) .log-single__back:hover {
-    color: #f1f5f9;
+    color: var(--text-primary);
   }
 </style>

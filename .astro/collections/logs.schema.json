@@ -1,45 +1,30 @@
 {
-  "$ref": "#/definitions/logs",
-  "definitions": {
-    "logs": {
-      "type": "object",
-      "properties": {
-        "title": {
-          "type": "string",
-          "default": ""
-        },
-        "date": {
-          "anyOf": [
-            {
-              "type": "string",
-              "format": "date-time"
-            },
-            {
-              "type": "string",
-              "format": "date"
-            },
-            {
-              "type": "integer",
-              "format": "unix-time"
-            }
-          ]
-        },
-        "image": {
-          "type": "string"
-        },
-        "imageAlt": {
-          "type": "string",
-          "default": ""
-        },
-        "$schema": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "date"
-      ],
-      "additionalProperties": false
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "title": {
+      "default": "",
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "image": {
+      "type": "string"
+    },
+    "imageAlt": {
+      "default": "",
+      "type": "string"
+    },
+    "$schema": {
+      "type": "string"
     }
   },
-  "$schema": "http://json-schema.org/draft-07/schema#"
+  "required": [
+    "title",
+    "date",
+    "imageAlt"
+  ],
+  "additionalProperties": false
 }

@@ -1,4 +1,7 @@
 ---
+import FormModal from "./FormModal.astro";
+import { FORMSPREE_URL } from "../lib/folders";
+
 interface Attachment {
   name: string;
   url: string;
@@ -71,6 +74,7 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
         </svg>
         <span class="expand-label">Expand</span>
         <span class="collapse-label">Collapse</span>
+        <span class="action-btn__kbd">E</span>
       </button>
       <button class="action-btn" id="reply-btn" title="Reply" aria-label="Reply">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -78,6 +82,7 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
           <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
         </svg>
         <span>Reply</span>
+        <span class="action-btn__kbd">R</span>
       </button>
       <button class="action-btn forward-btn" title="Forward" aria-label="Forward" data-share-title={title}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -85,6 +90,7 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
           <path d="M4 18v-2a4 4 0 0 1 4-4h12"></path>
         </svg>
         <span>Forward</span>
+        <span class="action-btn__kbd">F</span>
       </button>
     </div>
     <div class="reading-pane__nav-btns">
@@ -93,6 +99,7 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M15 19l-7-7 7-7"></path>
           </svg>
+          <span class="action-btn__kbd">K</span>
         </a>
       ) : (
         <span class="action-btn action-btn--nav action-btn--disabled" aria-label="Previous" aria-disabled="true">
@@ -106,6 +113,7 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 5l7 7-7 7"></path>
           </svg>
+          <span class="action-btn__kbd">J</span>
         </a>
       ) : (
         <span class="action-btn action-btn--nav action-btn--disabled" aria-label="Next" aria-disabled="true">
@@ -125,7 +133,7 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
       <div class="reading-pane__sender-row">
         <div class="reading-pane__sender-left">
           <div class="reading-pane__avatar">
-            S
+            {from.charAt(0).toUpperCase()}
           </div>
           <div>
             <p class="reading-pane__from-line">
@@ -189,56 +197,15 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
   </div>
 
   <!-- Reply Modal -->
-  <div class="reply-modal-overlay" id="reply-modal-overlay">
-    <div class="reply-modal">
-      <div class="reply-modal__header">
-        <h3>Reply</h3>
-        <button class="reply-modal__close" id="reply-modal-close" aria-label="Close">&times;</button>
-      </div>
-      <form
-        class="reply-modal__form"
-        id="reply-form"
-        action="https://formspree.io/f/xjgeajby"
-        method="POST"
-      >
-        <!-- Hidden field: actual subject sent to Formspree -->
-        <input type="hidden" name="_subject" value={`Post Reply: ${title}`} />
-        <div class="reply-modal__field">
-          <label for="reply-subject">Subject</label>
-          <input type="text" id="reply-subject" value={`Re: ${title}`} readonly class="reply-modal__input reply-modal__input--readonly" />
-        </div>
-        <div class="reply-modal__field">
-          <label for="reply-email">Your Email</label>
-          <input type="email" id="reply-email" name="email" placeholder="your@email.com" required class="reply-modal__input" />
-        </div>
-        <div class="reply-modal__field">
-          <label for="reply-message">Message</label>
-          <textarea id="reply-message" name="message" rows="6" placeholder="Write your reply..." required class="reply-modal__textarea"></textarea>
-        </div>
-        <div class="reply-modal__actions">
-          <button type="button" class="reply-modal__cancel" id="reply-modal-cancel">Cancel</button>
-          <button type="submit" class="reply-modal__send" id="reply-submit-btn">Send Reply</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Success Modal -->
-  <div class="reply-modal-overlay" id="success-modal-overlay">
-    <div class="reply-modal success-modal">
-      <div class="success-modal__content">
-        <div class="success-modal__icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-          </svg>
-        </div>
-        <h3 class="success-modal__title">Message Sent!</h3>
-        <p class="success-modal__text">Your reply has been delivered successfully. Thank you for reaching out!</p>
-        <button class="reply-modal__send" id="success-modal-close" style="margin-top: 8px;">Done</button>
-      </div>
-    </div>
-  </div>
+  <FormModal
+    id="reply"
+    title="Reply"
+    formAction={FORMSPREE_URL}
+    subjectValue={`Re: ${title}`}
+    subjectReadonly={true}
+    submitLabel="Send Reply"
+    successMessage="Your reply has been delivered successfully. Thank you for reaching out!"
+  />
 </article>
 
 <script>
@@ -265,63 +232,26 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
       });
     });
 
-    // Expand toggle
+    // Expand toggle — state lives on <html data-expanded> so it survives View Transitions
     const expandBtn = document.getElementById("expand-btn");
-    const msgList = document.querySelector(".msg-list") as HTMLElement | null;
-
-    if (expandBtn && msgList && readingPane) {
-      // Restore expanded state from session
-      if (sessionStorage.getItem("reading-pane-expanded") === "true") {
-        readingPane.classList.add("reading-pane--expanded");
-        msgList.style.display = "none";
-      }
-
+    if (expandBtn) {
       expandBtn.addEventListener("click", () => {
-        const isExpanded = readingPane.classList.toggle("reading-pane--expanded");
-        sessionStorage.setItem("reading-pane-expanded", String(isExpanded));
+        const html = document.documentElement;
+        const isExpanded = html.hasAttribute("data-expanded");
         if (isExpanded) {
-          msgList.style.display = "none";
+          html.removeAttribute("data-expanded");
+          sessionStorage.removeItem("expanded");
         } else {
-          msgList.style.display = "";
+          html.setAttribute("data-expanded", "");
+          sessionStorage.setItem("expanded", "1");
         }
       });
     }
 
-    // Reply modal
+    // Reply button — delegates to FormModal
     const replyBtn = document.getElementById("reply-btn");
-    const overlay = document.getElementById("reply-modal-overlay");
-    const closeBtn = document.getElementById("reply-modal-close");
-    const cancelBtn = document.getElementById("reply-modal-cancel");
-    const replyForm = document.getElementById("reply-form") as HTMLFormElement | null;
-    const submitBtn = document.getElementById("reply-submit-btn");
-
-    // Success modal
-    const successOverlay = document.getElementById("success-modal-overlay");
-    const successCloseBtn = document.getElementById("success-modal-close");
-
-    function openReplyModal() {
-      overlay?.classList.add("reply-modal-overlay--visible");
-    }
-    function closeReplyModal() {
-      overlay?.classList.remove("reply-modal-overlay--visible");
-    }
-    function openSuccessModal() {
-      successOverlay?.classList.add("reply-modal-overlay--visible");
-    }
-    function closeSuccessModal() {
-      successOverlay?.classList.remove("reply-modal-overlay--visible");
-    }
-
-    replyBtn?.addEventListener("click", openReplyModal);
-    closeBtn?.addEventListener("click", closeReplyModal);
-    cancelBtn?.addEventListener("click", closeReplyModal);
-    overlay?.addEventListener("click", (e) => {
-      if (e.target === overlay) closeReplyModal();
-    });
-
-    successCloseBtn?.addEventListener("click", closeSuccessModal);
-    successOverlay?.addEventListener("click", (e) => {
-      if (e.target === successOverlay) closeSuccessModal();
+    replyBtn?.addEventListener("click", () => {
+      document.dispatchEvent(new CustomEvent('form-modal:open:reply'));
     });
 
     // Forward button — native share on mobile, copy link on desktop
@@ -347,41 +277,6 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
           }
         } catch {
           // Clipboard not available
-        }
-      }
-    });
-
-    // Formspree submission
-    replyForm?.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      if (submitBtn) {
-        submitBtn.textContent = "Sending...";
-        (submitBtn as HTMLButtonElement).disabled = true;
-      }
-
-      const formData = new FormData(replyForm);
-
-      try {
-        const response = await fetch(replyForm.action, {
-          method: "POST",
-          body: formData,
-          headers: { Accept: "application/json" },
-        });
-
-        if (response.ok) {
-          replyForm.reset();
-          closeReplyModal();
-          openSuccessModal();
-        } else {
-          alert("Something went wrong. Please try again.");
-        }
-      } catch {
-        alert("Network error. Please check your connection and try again.");
-      } finally {
-        if (submitBtn) {
-          submitBtn.textContent = "Send Reply";
-          (submitBtn as HTMLButtonElement).disabled = false;
         }
       }
     });
@@ -432,24 +327,43 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
     padding: 6px var(--spacing-md);
     border-radius: 999px;
     font-size: var(--font-size-xs);
-    color: #2563eb;
+    color: var(--text-action);
     font-weight: 600;
-    border: 1px solid #bfdbfe;
-    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-action);
     cursor: pointer;
     transition:
       background var(--transition-fast),
       box-shadow var(--transition-fast);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
   }
 
   .action-btn:hover {
-    background: #eff6ff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    background: var(--bg-action-hover);
+    box-shadow: var(--shadow-md);
   }
 
   .action-btn span {
     display: none;
+  }
+
+  /* Keyboard hint badges on nav buttons - always visible */
+  .action-btn__kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    background: var(--bg-action);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    font-family: var(--font-family);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-action);
+    margin-left: 6px;
+    box-shadow: var(--shadow-sm);
   }
 
   @media (min-width: 1200px) {
@@ -462,11 +376,18 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
       display: none;
     }
 
-    .reading-pane--expanded .action-btn .collapse-label {
+    :global(html[data-expanded]) .action-btn .collapse-label {
       display: inline;
     }
 
-    .reading-pane--expanded .action-btn .expand-label {
+    :global(html[data-expanded]) .action-btn .expand-label {
+      display: none;
+    }
+  }
+
+  /* Hide keyboard hints on mobile */
+  @media (max-width: 1199px) {
+    .action-btn__kbd {
       display: none;
     }
   }
@@ -488,18 +409,18 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
     display: none;
   }
 
-  .reading-pane--expanded .expand-icon,
-  .reading-pane--expanded .expand-label {
+  :global(html[data-expanded]) .expand-icon,
+  :global(html[data-expanded]) .expand-label {
     display: none;
   }
 
-  .reading-pane--expanded .collapse-icon,
-  .reading-pane--expanded .collapse-label {
+  :global(html[data-expanded]) .collapse-icon,
+  :global(html[data-expanded]) .collapse-label {
     display: inline-block;
   }
 
   /* Expanded mode: center content with comfortable max-width */
-  .reading-pane--expanded .reading-pane__body {
+  :global(html[data-expanded]) .reading-pane__body {
     max-width: 780px;
     margin: 0 auto;
     width: 100%;
@@ -541,7 +462,7 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
   .reading-pane__title {
     font-size: 1.875rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-primary);
     line-height: 1.25;
     margin-bottom: var(--spacing-lg);
   }
@@ -562,8 +483,8 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #e2e8f0;
-    color: #475569;
+    background: var(--bg-avatar);
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -575,22 +496,22 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
   .reading-pane__from-line {
     font-size: var(--font-size-sm);
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
   }
 
   .reading-pane__from-email {
     font-weight: 400;
-    color: #94a3b8;
+    color: var(--text-muted);
   }
 
   .reading-pane__to-line {
     font-size: var(--font-size-xs);
-    color: #64748b;
+    color: var(--text-detail-secondary);
   }
 
   .reading-pane__date-block {
     font-size: var(--font-size-xs);
-    color: #64748b;
+    color: var(--text-detail-secondary);
     text-align: right;
   }
 
@@ -598,7 +519,7 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
   .reading-pane__attachments {
     margin-top: var(--spacing-2xl);
     padding-top: var(--spacing-lg);
-    border-top: 1px dashed #e2e8f0;
+    border-top: 1px dashed var(--border-detail);
   }
 
   .attachments__header {
@@ -606,7 +527,7 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
     align-items: center;
     gap: var(--spacing-sm);
     font-size: var(--font-size-xs);
-    color: #64748b;
+    color: var(--text-detail-secondary);
     margin-bottom: var(--spacing-sm);
   }
 
@@ -621,11 +542,11 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-sm) var(--spacing-md);
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: var(--bg-detail);
+    border: 1px solid var(--border-detail);
     border-radius: var(--radius-md);
     font-size: var(--font-size-sm);
-    color: #0f172a;
+    color: var(--text-primary);
     text-decoration: none;
     transition:
       background var(--transition-fast),
@@ -633,8 +554,8 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
   }
 
   .attachment:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
+    background: var(--bg-action-hover);
+    border-color: var(--border-separator);
   }
 
   .attachment__name {
@@ -642,335 +563,8 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
   }
 
   .attachment__size {
-    color: #64748b;
+    color: var(--text-detail-secondary);
     font-size: var(--font-size-xs);
-  }
-
-  /* ===== REPLY MODAL ===== */
-  .reply-modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(4px);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .reply-modal-overlay--visible {
-    display: flex;
-  }
-
-  .reply-modal {
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.16);
-    width: 90%;
-    max-width: 480px;
-    overflow: hidden;
-    animation: modalIn 0.2s ease-out;
-  }
-
-  @keyframes modalIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95) translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
-  }
-
-  .reply-modal__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--spacing-lg) var(--spacing-xl);
-    border-bottom: 1px solid #e2e8f0;
-  }
-
-  .reply-modal__header h3 {
-    font-size: var(--font-size-lg);
-    font-weight: 700;
-    color: #0f172a;
-  }
-
-  .reply-modal__close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: #94a3b8;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 8px;
-    line-height: 1;
-  }
-
-  .reply-modal__close:hover {
-    background: #f1f5f9;
-    color: #475569;
-  }
-
-  .reply-modal__form {
-    padding: var(--spacing-lg) var(--spacing-xl);
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-  }
-
-  .reply-modal__field {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-  }
-
-  .reply-modal__field label {
-    font-size: var(--font-size-xs);
-    font-weight: 600;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .reply-modal__input,
-  .reply-modal__textarea {
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    font-size: var(--font-size-sm);
-    font-family: var(--font-family);
-    color: #0f172a;
-    transition: border-color var(--transition-fast);
-    outline: none;
-  }
-
-  .reply-modal__input::placeholder,
-  .reply-modal__textarea::placeholder {
-    color: #cbd5e1;
-  }
-
-  .reply-modal__input:focus,
-  .reply-modal__textarea:focus {
-    border-color: #93c5fd;
-    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
-  }
-
-  .reply-modal__input--readonly {
-    background: #f8fafc;
-    color: #64748b;
-    cursor: not-allowed;
-  }
-
-  .reply-modal__textarea {
-    resize: vertical;
-    min-height: 100px;
-  }
-
-  .reply-modal__actions {
-    display: flex;
-    gap: var(--spacing-sm);
-    justify-content: flex-end;
-    padding-top: var(--spacing-sm);
-  }
-
-  .reply-modal__cancel {
-    padding: 8px 16px;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    background: #fff;
-    color: #64748b;
-    font-size: var(--font-size-sm);
-    font-weight: 500;
-    cursor: pointer;
-    transition: background var(--transition-fast);
-  }
-
-  .reply-modal__cancel:hover {
-    background: #f1f5f9;
-  }
-
-  .reply-modal__send {
-    padding: 8px 20px;
-    border: 1px solid #1e70bf;
-    border-radius: 10px;
-    background: linear-gradient(to bottom, #7abcff 0%, #60abf8 44%, #4096ee 100%);
-    color: #fff;
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    cursor: pointer;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.15);
-    transition: all 0.15s ease;
-  }
-
-  .reply-modal__send:hover {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
-  }
-
-  /* ===== SUCCESS MODAL ===== */
-  .success-modal {
-    text-align: center;
-    max-width: 380px;
-  }
-
-  .success-modal__content {
-    padding: var(--spacing-2xl) var(--spacing-xl);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--spacing-md);
-  }
-
-  .success-modal__icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: #f0fdf4;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: popIn 0.3s ease-out;
-  }
-
-  @keyframes popIn {
-    from {
-      transform: scale(0.5);
-      opacity: 0;
-    }
-    to {
-      transform: scale(1);
-      opacity: 1;
-    }
-  }
-
-  .success-modal__title {
-    font-size: var(--font-size-xl);
-    font-weight: 700;
-    color: #0f172a;
-    margin: 0;
-  }
-
-  .success-modal__text {
-    font-size: var(--font-size-sm);
-    color: #64748b;
-    line-height: 1.5;
-    margin: 0;
-  }
-
-  /* ===== DARK MODE ===== */
-  :global([data-theme="dark"]) .action-btn {
-    color: #60a5fa;
-    border-color: #334155;
-    background: rgba(30, 41, 59, 0.8);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  }
-
-  :global([data-theme="dark"]) .action-btn:hover {
-    background: #334155;
-  }
-
-  :global([data-theme="dark"]) .reading-pane__title {
-    color: #f1f5f9;
-  }
-
-  :global([data-theme="dark"]) .reading-pane__avatar {
-    background: #334155;
-    color: #94a3b8;
-  }
-
-  :global([data-theme="dark"]) .reading-pane__from-line {
-    color: #f1f5f9;
-  }
-
-  :global([data-theme="dark"]) .reading-pane__to-line,
-  :global([data-theme="dark"]) .reading-pane__date-block {
-    color: #94a3b8;
-  }
-
-  :global([data-theme="dark"]) .reading-pane__attachments {
-    border-top-color: #475569;
-  }
-
-  :global([data-theme="dark"]) .attachments__header {
-    color: #94a3b8;
-  }
-
-  :global([data-theme="dark"]) .attachment {
-    background: #1e293b;
-    border-color: #334155;
-    color: #e2e8f0;
-  }
-
-  :global([data-theme="dark"]) .attachment:hover {
-    background: #334155;
-    border-color: #475569;
-  }
-
-  :global([data-theme="dark"]) .attachment__size {
-    color: #94a3b8;
-  }
-
-  :global([data-theme="dark"]) .reply-modal {
-    background: #1e293b;
-  }
-
-  :global([data-theme="dark"]) .reply-modal__header {
-    border-bottom-color: #334155;
-  }
-
-  :global([data-theme="dark"]) .reply-modal__header h3 {
-    color: #f1f5f9;
-  }
-
-  :global([data-theme="dark"]) .reply-modal__close:hover {
-    background: #334155;
-    color: #e2e8f0;
-  }
-
-  :global([data-theme="dark"]) .reply-modal__field label {
-    color: #cbd5e1;
-  }
-
-  :global([data-theme="dark"]) .reply-modal__input,
-  :global([data-theme="dark"]) .reply-modal__textarea {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(148, 163, 184, 0.2);
-    color: #f1f5f9;
-  }
-
-  :global([data-theme="dark"]) .reply-modal__input--readonly {
-    background: rgba(255, 255, 255, 0.03);
-    color: #94a3b8;
-  }
-
-  :global([data-theme="dark"]) .reply-modal__input::placeholder,
-  :global([data-theme="dark"]) .reply-modal__textarea::placeholder {
-    color: #64748b;
-  }
-
-  :global([data-theme="dark"]) .reply-modal__cancel {
-    background: #1e293b;
-    border-color: #334155;
-    color: #94a3b8;
-  }
-
-  :global([data-theme="dark"]) .reply-modal__cancel:hover {
-    background: #334155;
-  }
-
-  :global([data-theme="dark"]) .success-modal__icon {
-    background: #064e3b;
-  }
-
-  :global([data-theme="dark"]) .success-modal__title {
-    color: #f1f5f9;
-  }
-
-  :global([data-theme="dark"]) .success-modal__text {
-    color: #94a3b8;
   }
 
   /* ===== MOBILE: back button ===== */

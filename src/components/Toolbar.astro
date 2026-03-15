@@ -24,27 +24,7 @@
       </svg>
     </button>
     <a href="/inbox" class="toolbar__brand">
-      <svg
-        class="toolbar__logo"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-      >
-        <rect
-          x="2"
-          y="4"
-          width="20"
-          height="16"
-          rx="2"
-          stroke="currentColor"
-          stroke-width="1.5"></rect>
-        <path
-          d="M2 7l10 6 10-6"
-          stroke="currentColor"
-          stroke-width="1.5"
-          stroke-linecap="round"></path>
-      </svg>
+      <span class="toolbar__logo">📧</span>
       <span class="toolbar__title">mailto:setyawanadi</span>
     </a>
   </div>
@@ -67,14 +47,19 @@
       <input
         type="text"
         class="toolbar__search-input"
-        placeholder="Search..."
+        placeholder="Search (coming soon)"
         aria-label="Search"
+        aria-disabled="true"
+        title="Search is coming soon"
         readonly
       />
     </div>
   </div>
 
   <div class="toolbar__right">
+    <button class="toolbar__shortcuts-btn" id="shortcuts-btn" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">
+      <span>?</span>
+    </button>
     <button class="toolbar__theme-btn" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
       <svg class="theme-icon theme-icon--light" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="5"></circle>
@@ -138,12 +123,13 @@
   .toolbar__brand {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: 2px;
     text-decoration: none;
   }
 
   .toolbar__logo {
-    color: var(--accent);
+    font-size: 20px;
+    line-height: 1;
     flex-shrink: 0;
   }
 
@@ -195,7 +181,7 @@
     font-family: var(--font-family);
     font-size: var(--font-size-sm);
     color: var(--text-primary);
-    cursor: default;
+    cursor: not-allowed;
   }
 
   .toolbar__search-input::placeholder {
@@ -208,6 +194,36 @@
     margin-left: auto;
   }
 
+  .toolbar__shortcuts-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-action);
+    color: var(--text-action);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    font-family: var(--font-family);
+    transition: background var(--transition-fast), box-shadow var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+    margin-right: var(--spacing-xs);
+  }
+
+  .toolbar__shortcuts-btn:hover {
+    background: var(--bg-action-hover);
+    box-shadow: var(--shadow-md);
+  }
+
+  @media (min-width: 769px) {
+    .toolbar__shortcuts-btn {
+      display: flex;
+    }
+  }
+
   .toolbar__theme-btn {
     display: flex;
     align-items: center;
@@ -215,28 +231,17 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    border: 1px solid #bfdbfe;
-    background: rgba(255, 255, 255, 0.8);
-    color: #2563eb;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-action);
+    color: var(--text-action);
     cursor: pointer;
     transition: background var(--transition-fast), box-shadow var(--transition-fast);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
   }
 
   .toolbar__theme-btn:hover {
-    background: #eff6ff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-  }
-
-  :global([data-theme="dark"]) .toolbar__theme-btn {
-    color: #60a5fa;
-    border-color: #334155;
-    background: rgba(30, 41, 59, 0.8);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  }
-
-  :global([data-theme="dark"]) .toolbar__theme-btn:hover {
-    background: #334155;
+    background: var(--bg-action-hover);
+    box-shadow: var(--shadow-md);
   }
 
   /* Show sun icon when dark, moon icon when light */

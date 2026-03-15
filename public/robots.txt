@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+
+Sitemap: https://setyawanadi.netlify.app/sitemap-index.xml

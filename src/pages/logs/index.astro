@@ -1,6 +1,8 @@
 ---
 import { getCollection, render } from 'astro:content';
 import EmailLayout from '../../layouts/EmailLayout.astro';
+import FormModal from '../../components/FormModal.astro';
+import { FORMSPREE_URL } from '../../lib/folders';
 
 const items = await getCollection('logs');
 
@@ -127,58 +129,36 @@ const renderedItems = await Promise.all(
   </div>
 
   <!-- Reply Modal (shared) -->
-  <div class="reply-modal-overlay" id="log-reply-overlay">
-    <div class="reply-modal">
-      <div class="reply-modal__header">
-        <h3>Reply</h3>
-        <button class="reply-modal__close" id="log-reply-close" aria-label="Close">&times;</button>
-      </div>
-      <form
-        class="reply-modal__form"
-        id="log-reply-form"
-        action="https://formspree.io/f/xjgeajby"
-        method="POST"
-      >
-        <input type="hidden" name="_subject" id="log-hidden-subject" value="" />
-        <div class="reply-modal__field">
-          <label for="log-reply-subject">Subject</label>
-          <input type="text" id="log-reply-subject" readonly class="reply-modal__input reply-modal__input--readonly" />
-        </div>
-        <div class="reply-modal__field">
-          <label for="log-reply-email">Your Email</label>
-          <input type="email" id="log-reply-email" name="email" placeholder="your@email.com" required class="reply-modal__input" />
-        </div>
-        <div class="reply-modal__field">
-          <label for="log-reply-message">Message</label>
-          <textarea id="log-reply-message" name="message" rows="4" placeholder="Write your reply..." required class="reply-modal__textarea"></textarea>
-        </div>
-        <div class="reply-modal__actions">
-          <button type="button" class="reply-modal__cancel" id="log-reply-cancel">Cancel</button>
-          <button type="submit" class="reply-modal__send" id="log-reply-submit">Send Reply</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Success Modal -->
-  <div class="reply-modal-overlay" id="log-success-overlay">
-    <div class="reply-modal success-modal">
-      <div class="success-modal__content">
-        <div class="success-modal__icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-          </svg>
-        </div>
-        <h3 class="success-modal__title">Message Sent!</h3>
-        <p class="success-modal__text">Your reply has been delivered successfully. Thank you!</p>
-        <button class="reply-modal__send" id="log-success-close" style="margin-top: 8px;">Done</button>
-      </div>
-    </div>
-  </div>
+  <FormModal
+    id="log-reply"
+    title="Reply"
+    formAction={FORMSPREE_URL}
+    subjectReadonly={true}
+    textareaRows={4}
+    submitLabel="Send Reply"
+    successMessage="Your reply has been delivered successfully. Thank you!"
+  />
 </EmailLayout>
 
 <script>
+  // Reply button handler — delegated click (registered once, persists across navigations)
+  if (!(window as any).__logReplyRegistered) {
+    (window as any).__logReplyRegistered = true;
+
+    document.addEventListener("click", (e) => {
+      const replyBtn = (e.target as HTMLElement).closest(".log-reply-btn");
+      if (replyBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const replySubject = (replyBtn as HTMLElement).dataset.replySubject || "";
+        const formspreeSubject = (replyBtn as HTMLElement).dataset.formspreeSubject || "";
+        document.dispatchEvent(new CustomEvent('form-modal:open-with-subject:log-reply', {
+          detail: { displaySubject: replySubject, hiddenSubject: formspreeSubject },
+        }));
+      }
+    });
+  }
+
   document.addEventListener("astro:page-load", () => {
     // Group consecutive images into photo grids
     document.querySelectorAll(".log-entry__body").forEach((body) => {
@@ -267,44 +247,18 @@ const renderedItems = await Promise.all(
     lightbox?.addEventListener("click", (e) => {
       if (e.target === lightbox) closeLightbox();
     });
-    document.addEventListener("keydown", (e) => {
+
+    // Lightbox keyboard nav — store handler on window to replace on each page load
+    if ((window as any).__lightboxKeydown) {
+      document.removeEventListener("keydown", (window as any).__lightboxKeydown);
+    }
+    (window as any).__lightboxKeydown = (e: KeyboardEvent) => {
       if (!lightbox?.classList.contains("lightbox--visible")) return;
       if (e.key === "Escape") closeLightbox();
       if (e.key === "ArrowLeft" && currentIndex > 0) showImage(currentIndex - 1);
       if (e.key === "ArrowRight" && currentIndex < allImages.length - 1) showImage(currentIndex + 1);
-    });
-
-    const overlay = document.getElementById("log-reply-overlay");
-    const closeBtn = document.getElementById("log-reply-close");
-    const cancelBtn = document.getElementById("log-reply-cancel");
-    const form = document.getElementById("log-reply-form") as HTMLFormElement | null;
-    const submitBtn = document.getElementById("log-reply-submit");
-    const subjectInput = document.getElementById("log-reply-subject") as HTMLInputElement | null;
-    const hiddenSubject = document.getElementById("log-hidden-subject") as HTMLInputElement | null;
-    const successOverlay = document.getElementById("log-success-overlay");
-    const successClose = document.getElementById("log-success-close");
-
-    function openReply() { overlay?.classList.add("reply-modal-overlay--visible"); }
-    function closeReply() { overlay?.classList.remove("reply-modal-overlay--visible"); }
-    function openSuccess() { successOverlay?.classList.add("reply-modal-overlay--visible"); }
-    function closeSuccess() { successOverlay?.classList.remove("reply-modal-overlay--visible"); }
-
-    // Each reply button sets the subject and opens modal
-    document.querySelectorAll(".log-reply-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const replySubject = (btn as HTMLElement).dataset.replySubject || "";
-        const formspreeSubject = (btn as HTMLElement).dataset.formspreeSubject || "";
-        if (subjectInput) subjectInput.value = replySubject;
-        if (hiddenSubject) hiddenSubject.value = formspreeSubject;
-        openReply();
-      });
-    });
-
-    closeBtn?.addEventListener("click", closeReply);
-    cancelBtn?.addEventListener("click", closeReply);
-    overlay?.addEventListener("click", (e) => { if (e.target === overlay) closeReply(); });
-    successClose?.addEventListener("click", closeSuccess);
-    successOverlay?.addEventListener("click", (e) => { if (e.target === successOverlay) closeSuccess(); });
+    };
+    document.addEventListener("keydown", (window as any).__lightboxKeydown);
 
     // Forward button — native share sheet on mobile, copy link on desktop
     document.querySelectorAll(".log-forward-btn").forEach((btn) => {
@@ -335,35 +289,6 @@ const renderedItems = await Promise.all(
       });
     });
 
-    form?.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      if (submitBtn) {
-        submitBtn.textContent = "Sending...";
-        (submitBtn as HTMLButtonElement).disabled = true;
-      }
-      const formData = new FormData(form);
-      try {
-        const response = await fetch(form.action, {
-          method: "POST",
-          body: formData,
-          headers: { Accept: "application/json" },
-        });
-        if (response.ok) {
-          form.reset();
-          closeReply();
-          openSuccess();
-        } else {
-          alert("Something went wrong. Please try again.");
-        }
-      } catch {
-        alert("Network error. Please check your connection and try again.");
-      } finally {
-        if (submitBtn) {
-          submitBtn.textContent = "Send Reply";
-          (submitBtn as HTMLButtonElement).disabled = false;
-        }
-      }
-    });
   });
 </script>
 
@@ -535,13 +460,13 @@ const renderedItems = await Promise.all(
   .logs-feed__title {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-primary);
     margin: 0 0 4px;
   }
 
   .logs-feed__subtitle {
     font-size: var(--font-size-sm);
-    color: #64748b;
+    color: var(--text-detail-secondary);
     margin: 0;
   }
 
@@ -549,7 +474,7 @@ const renderedItems = await Promise.all(
     max-width: 600px;
     margin: 0 auto;
     border: none;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--border-detail);
   }
 
   .logs-feed__timeline {
@@ -563,7 +488,7 @@ const renderedItems = await Promise.all(
     margin: 0 auto;
     padding: var(--spacing-2xl);
     text-align: center;
-    color: #94a3b8;
+    color: var(--text-muted);
   }
 
   /* ===== LOG ENTRY ===== */
@@ -573,19 +498,19 @@ const renderedItems = await Promise.all(
 
   .log-entry__date {
     font-size: var(--font-size-xs);
-    color: #94a3b8;
+    color: var(--text-muted);
     display: block;
   }
 
   .log-entry__title {
     font-size: var(--font-size-2xl);
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-primary);
     margin: 0 0 var(--spacing-sm);
   }
 
   .log-entry__body {
-    color: #334155;
+    color: var(--text-secondary);
     line-height: 1.6;
     font-size: var(--font-size-base);
   }
@@ -615,315 +540,18 @@ const renderedItems = await Promise.all(
     padding: 6px 14px;
     border-radius: 999px;
     font-size: var(--font-size-xs);
-    color: #64748b;
+    color: var(--text-detail-secondary);
     font-weight: 500;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-detail);
     background: transparent;
     cursor: pointer;
     transition: all var(--transition-fast);
   }
 
   .log-action-btn:hover {
-    color: #2563eb;
-    border-color: #bfdbfe;
-    background: #eff6ff;
+    color: var(--text-action);
+    border-color: var(--border-subtle);
+    background: var(--bg-action-hover);
   }
 
-  /* ===== REPLY/SUCCESS MODAL (same styles as ReadingPane) ===== */
-  .reply-modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(4px);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .reply-modal-overlay--visible {
-    display: flex;
-  }
-
-  .reply-modal {
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.16);
-    width: 90%;
-    max-width: 480px;
-    overflow: hidden;
-    animation: modalIn 0.2s ease-out;
-  }
-
-  @keyframes modalIn {
-    from { opacity: 0; transform: scale(0.95) translateY(10px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-  }
-
-  .reply-modal__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--spacing-lg) var(--spacing-xl);
-    border-bottom: 1px solid #e2e8f0;
-  }
-
-  .reply-modal__header h3 {
-    font-size: var(--font-size-lg);
-    font-weight: 700;
-    color: #0f172a;
-  }
-
-  .reply-modal__close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: #94a3b8;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 8px;
-    line-height: 1;
-  }
-
-  .reply-modal__close:hover {
-    background: #f1f5f9;
-    color: #475569;
-  }
-
-  .reply-modal__form {
-    padding: var(--spacing-lg) var(--spacing-xl);
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-  }
-
-  .reply-modal__field {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-  }
-
-  .reply-modal__field label {
-    font-size: var(--font-size-xs);
-    font-weight: 600;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .reply-modal__input,
-  .reply-modal__textarea {
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    font-size: var(--font-size-sm);
-    font-family: var(--font-family);
-    color: #0f172a;
-    transition: border-color var(--transition-fast);
-    outline: none;
-  }
-
-  .reply-modal__input::placeholder,
-  .reply-modal__textarea::placeholder {
-    color: #cbd5e1;
-  }
-
-  .reply-modal__input:focus,
-  .reply-modal__textarea:focus {
-    border-color: #93c5fd;
-    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
-  }
-
-  .reply-modal__input--readonly {
-    background: #f8fafc;
-    color: #64748b;
-    cursor: not-allowed;
-  }
-
-  .reply-modal__textarea {
-    resize: vertical;
-    min-height: 80px;
-  }
-
-  .reply-modal__actions {
-    display: flex;
-    gap: var(--spacing-sm);
-    justify-content: flex-end;
-    padding-top: var(--spacing-sm);
-  }
-
-  .reply-modal__cancel {
-    padding: 8px 16px;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    background: #fff;
-    color: #64748b;
-    font-size: var(--font-size-sm);
-    font-weight: 500;
-    cursor: pointer;
-    transition: background var(--transition-fast);
-  }
-
-  .reply-modal__cancel:hover {
-    background: #f1f5f9;
-  }
-
-  .reply-modal__send {
-    padding: 8px 20px;
-    border: 1px solid #1e70bf;
-    border-radius: 10px;
-    background: linear-gradient(to bottom, #7abcff 0%, #60abf8 44%, #4096ee 100%);
-    color: #fff;
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    cursor: pointer;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.15);
-    transition: all 0.15s ease;
-  }
-
-  .reply-modal__send:hover {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
-  }
-
-  .success-modal {
-    text-align: center;
-    max-width: 380px;
-  }
-
-  .success-modal__content {
-    padding: var(--spacing-2xl) var(--spacing-xl);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--spacing-md);
-  }
-
-  .success-modal__icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: #f0fdf4;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: popIn 0.3s ease-out;
-  }
-
-  @keyframes popIn {
-    from { transform: scale(0.5); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
-
-  .success-modal__title {
-    font-size: var(--font-size-xl);
-    font-weight: 700;
-    color: #0f172a;
-    margin: 0;
-  }
-
-  .success-modal__text {
-    font-size: var(--font-size-sm);
-    color: #64748b;
-    line-height: 1.5;
-    margin: 0;
-  }
-
-  /* ===== DARK MODE ===== */
-  :global([data-theme="dark"]) .logs-feed__title {
-    color: #f1f5f9;
-  }
-
-  :global([data-theme="dark"]) .logs-feed__subtitle {
-    color: #94a3b8;
-  }
-
-  :global([data-theme="dark"]) .logs-feed__divider {
-    border-top-color: rgba(51, 65, 85, 0.5);
-  }
-
-  :global([data-theme="dark"]) .log-entry__date {
-    color: #64748b;
-  }
-
-  :global([data-theme="dark"]) .log-entry__title {
-    color: #f1f5f9;
-  }
-
-  :global([data-theme="dark"]) .log-entry__body {
-    color: #cbd5e1;
-  }
-
-  :global([data-theme="dark"]) .log-action-btn {
-    color: #94a3b8;
-    border-color: #334155;
-    background: transparent;
-  }
-
-  :global([data-theme="dark"]) .log-action-btn:hover {
-    color: #60a5fa;
-    border-color: #475569;
-    background: #334155;
-  }
-
-  :global([data-theme="dark"]) .reply-modal {
-    background: #1e293b;
-  }
-
-  :global([data-theme="dark"]) .reply-modal__header {
-    border-bottom-color: #334155;
-  }
-
-  :global([data-theme="dark"]) .reply-modal__header h3 {
-    color: #f1f5f9;
-  }
-
-  :global([data-theme="dark"]) .reply-modal__close:hover {
-    background: #334155;
-    color: #e2e8f0;
-  }
-
-  :global([data-theme="dark"]) .reply-modal__field label {
-    color: #cbd5e1;
-  }
-
-  :global([data-theme="dark"]) .reply-modal__input,
-  :global([data-theme="dark"]) .reply-modal__textarea {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(148, 163, 184, 0.2);
-    color: #f1f5f9;
-  }
-
-  :global([data-theme="dark"]) .reply-modal__input--readonly {
-    background: rgba(255, 255, 255, 0.03);
-    color: #94a3b8;
-  }
-
-  :global([data-theme="dark"]) .reply-modal__input::placeholder,
-  :global([data-theme="dark"]) .reply-modal__textarea::placeholder {
-    color: #64748b;
-  }
-
-  :global([data-theme="dark"]) .reply-modal__cancel {
-    background: #1e293b;
-    border-color: #334155;
-    color: #94a3b8;
-  }
-
-  :global([data-theme="dark"]) .reply-modal__cancel:hover {
-    background: #334155;
-  }
-
-  :global([data-theme="dark"]) .success-modal__icon {
-    background: #064e3b;
-  }
-
-  :global([data-theme="dark"]) .success-modal__title {
-    color: #f1f5f9;
-  }
-
-  :global([data-theme="dark"]) .success-modal__text {
-    color: #94a3b8;
-  }
 </style>

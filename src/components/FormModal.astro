@@ -1,0 +1,556 @@
+---
+interface Props {
+  id: string;
+  title: string;
+  formAction: string;
+  subjectValue?: string;
+  subjectPlaceholder?: string;
+  subjectReadonly?: boolean;
+  showToField?: boolean;
+  textareaRows?: number;
+  submitLabel?: string;
+  successTitle?: string;
+  successMessage?: string;
+}
+
+const {
+  id,
+  title,
+  formAction,
+  subjectValue = "",
+  subjectPlaceholder = "What's this about?",
+  subjectReadonly = false,
+  showToField = false,
+  textareaRows = 6,
+  submitLabel = "Send Message",
+  successTitle = "Message Sent!",
+  successMessage = "Your message has been delivered successfully. Thank you for reaching out!",
+} = Astro.props;
+---
+
+<!-- Form Modal -->
+<div class="form-modal__overlay" id={`${id}-overlay`}>
+  <div class="form-modal" role="dialog" aria-modal="true" aria-labelledby={`${id}-title`}>
+    <div class="form-modal__header">
+      <h3 id={`${id}-title`}>{title}</h3>
+      <button class="form-modal__close" data-modal-close={id} aria-label="Close">&times;</button>
+    </div>
+    <form
+      class="form-modal__form"
+      data-modal-form={id}
+      action={formAction}
+      method="POST"
+      novalidate
+    >
+      {subjectReadonly && (
+        <input type="hidden" name="_subject" data-modal-hidden-subject={id} value={subjectValue} />
+      )}
+      {showToField && (
+        <div class="form-modal__field">
+          <label>To</label>
+          <input type="text" value="setyawanadi" readonly class="form-modal__input form-modal__input--readonly" />
+        </div>
+      )}
+      <div class="form-modal__field">
+        <label>From</label>
+        <input type="email" name="email" placeholder="your@email.com" class="form-modal__input" data-modal-email={id} />
+        <span class="form-modal__error" data-modal-error-email={id}></span>
+      </div>
+      <div class="form-modal__field">
+        <label>Subject</label>
+        <input
+          type="text"
+          data-modal-subject={id}
+          value={subjectValue}
+          placeholder={subjectPlaceholder}
+          readonly={subjectReadonly}
+          class:list={["form-modal__input", { "form-modal__input--readonly": subjectReadonly }]}
+          {...(!subjectReadonly ? { name: "_subject" } : {})}
+        />
+        <span class="form-modal__error" data-modal-error-subject={id}></span>
+      </div>
+      <div class="form-modal__field">
+        <label>Message</label>
+        <textarea name="message" rows={textareaRows} placeholder="Write your message..." class="form-modal__textarea" data-modal-message={id}></textarea>
+        <span class="form-modal__error" data-modal-error-message={id}></span>
+      </div>
+      <div class="form-modal__actions">
+        <button type="button" class="form-modal__cancel" data-modal-cancel={id}>Cancel</button>
+        <button type="submit" class="form-modal__send" data-modal-submit={id}>{submitLabel}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Success Toast -->
+<div class="toast" id={`${id}-toast`} role="status" aria-live="polite">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+  <span>{successTitle}</span>
+</div>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    // Initialize all form modals on the page
+    document.querySelectorAll<HTMLElement>("[data-modal-form]").forEach((form) => {
+      const id = form.dataset.modalForm!;
+      const overlay = document.getElementById(`${id}-overlay`);
+      const toast = document.getElementById(`${id}-toast`);
+      const closeBtn = document.querySelector(`[data-modal-close="${id}"]`);
+      const cancelBtn = document.querySelector(`[data-modal-cancel="${id}"]`);
+      const submitBtn = document.querySelector(`[data-modal-submit="${id}"]`) as HTMLButtonElement | null;
+      const emailInput = document.querySelector<HTMLInputElement>(`[data-modal-email="${id}"]`);
+      const subjectInput = document.querySelector<HTMLInputElement>(`[data-modal-subject="${id}"]`);
+      const messageInput = document.querySelector<HTMLTextAreaElement>(`[data-modal-message="${id}"]`);
+      const emailError = document.querySelector<HTMLSpanElement>(`[data-modal-error-email="${id}"]`);
+      const subjectError = document.querySelector<HTMLSpanElement>(`[data-modal-error-subject="${id}"]`);
+      const messageError = document.querySelector<HTMLSpanElement>(`[data-modal-error-message="${id}"]`);
+
+      let previousFocus: HTMLElement | null = null;
+
+      function openModal() {
+        previousFocus = document.activeElement as HTMLElement;
+        overlay?.classList.add("form-modal__overlay--visible");
+        const firstInput = overlay?.querySelector<HTMLInputElement>("input:not([readonly])");
+        firstInput?.focus();
+        // Clear any previous errors
+        clearAllErrors();
+      }
+
+      function closeModal() {
+        overlay?.classList.remove("form-modal__overlay--visible");
+        previousFocus?.focus();
+      }
+
+      function showToast() {
+        toast?.classList.add("toast--visible");
+        setTimeout(() => {
+          toast?.classList.remove("toast--visible");
+        }, 3000);
+      }
+
+      // Validation functions
+      function showError(input: HTMLElement, errorEl: HTMLSpanElement | null, message: string) {
+        if (input.tagName === "TEXTAREA") {
+          input.classList.add("form-modal__textarea--error");
+        } else {
+          input.classList.add("form-modal__input--error");
+        }
+        if (errorEl) {
+          errorEl.textContent = message;
+          errorEl.classList.add("form-modal__error--visible");
+        }
+      }
+
+      function clearError(input: HTMLElement, errorEl: HTMLSpanElement | null) {
+        if (input.tagName === "TEXTAREA") {
+          input.classList.remove("form-modal__textarea--error");
+        } else {
+          input.classList.remove("form-modal__input--error");
+        }
+        if (errorEl) {
+          errorEl.textContent = "";
+          errorEl.classList.remove("form-modal__error--visible");
+        }
+      }
+
+      function clearAllErrors() {
+        if (emailInput) clearError(emailInput, emailError);
+        if (subjectInput) clearError(subjectInput, subjectError);
+        if (messageInput) clearError(messageInput, messageError);
+      }
+
+      function validateEmail(): boolean {
+        if (!emailInput) return true;
+        const value = emailInput.value.trim();
+        if (!value) {
+          showError(emailInput, emailError, "Please enter your email address");
+          return false;
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          showError(emailInput, emailError, "Please enter a valid email address");
+          return false;
+        }
+        clearError(emailInput, emailError);
+        return true;
+      }
+
+      function validateSubject(): boolean {
+        if (!subjectInput || subjectInput.readOnly) return true;
+        const value = subjectInput.value.trim();
+        if (!value) {
+          showError(subjectInput, subjectError, "Please enter a subject");
+          return false;
+        }
+        clearError(subjectInput, subjectError);
+        return true;
+      }
+
+      function validateMessage(): boolean {
+        if (!messageInput) return true;
+        const value = messageInput.value.trim();
+        if (!value) {
+          showError(messageInput, messageError, "Please write your message");
+          return false;
+        }
+        clearError(messageInput, messageError);
+        return true;
+      }
+
+      function validateForm(): boolean {
+        const emailValid = validateEmail();
+        const subjectValid = validateSubject();
+        const messageValid = validateMessage();
+        return emailValid && subjectValid && messageValid;
+      }
+
+      // Clear errors on input
+      emailInput?.addEventListener("input", () => {
+        if (emailInput.classList.contains("form-modal__input--error")) {
+          validateEmail(); // Re-validate as user types
+        }
+      });
+
+      subjectInput?.addEventListener("input", () => {
+        if (subjectInput.classList.contains("form-modal__input--error")) {
+          validateSubject();
+        }
+      });
+
+      messageInput?.addEventListener("input", () => {
+        // Clear message error as soon as user starts typing (don't re-validate, just clear)
+        if (messageInput.classList.contains("form-modal__textarea--error")) {
+          clearError(messageInput, messageError);
+        }
+      });
+
+      // Listen for CustomEvent-based open triggers
+      document.addEventListener(`form-modal:open:${id}`, () => {
+        openModal();
+      });
+      document.addEventListener(`form-modal:open-with-subject:${id}`, ((e: CustomEvent) => {
+        const { displaySubject, hiddenSubject } = e.detail;
+        const subjectInput = document.querySelector<HTMLInputElement>(`[data-modal-subject="${id}"]`);
+        const hiddenInput = document.querySelector<HTMLInputElement>(`[data-modal-hidden-subject="${id}"]`);
+        if (subjectInput) subjectInput.value = displaySubject;
+        if (hiddenInput) hiddenInput.value = hiddenSubject;
+        openModal();
+      }) as EventListener);
+
+      closeBtn?.addEventListener("click", closeModal);
+      cancelBtn?.addEventListener("click", closeModal);
+      overlay?.addEventListener("click", (e) => {
+        if (e.target === overlay) closeModal();
+      });
+
+      // Focus trap
+      overlay?.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closeModal();
+          return;
+        }
+        if (e.key !== "Tab") return;
+        const focusable = overlay.querySelectorAll<HTMLElement>(
+          'button, [href], input:not([type="hidden"]), textarea, select, [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      });
+
+      // Form submission with validation
+      const formEl = form as HTMLFormElement;
+      const originalLabel = submitBtn?.textContent || "Send Message";
+      formEl.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        // Run validation
+        if (!validateForm()) {
+          return; // Stop submission if validation fails
+        }
+
+        if (submitBtn) {
+          submitBtn.textContent = "Sending...";
+          submitBtn.disabled = true;
+        }
+        const formData = new FormData(formEl);
+        try {
+          const response = await fetch(formEl.action, {
+            method: "POST",
+            body: formData,
+            headers: { Accept: "application/json" },
+          });
+          if (response.ok) {
+            closeModal();
+            showToast();
+            formEl.reset();
+          } else {
+            alert("Failed to send message. Please try again.");
+          }
+        } catch {
+          alert("Network error. Please try again.");
+        } finally {
+          if (submitBtn) {
+            submitBtn.textContent = originalLabel;
+            submitBtn.disabled = false;
+          }
+        }
+      });
+    });
+  });
+</script>
+
+<style is:global>
+  .form-modal__overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .form-modal__overlay--visible {
+    display: flex;
+  }
+
+  .form-modal {
+    background: var(--bg-detail);
+    border-radius: 16px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.16);
+    width: 90%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: formModalIn 0.2s ease-out;
+  }
+
+  @keyframes formModalIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .form-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-bottom: 1px solid var(--border-detail);
+  }
+
+  .form-modal__header h3 {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .form-modal__close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+    line-height: 1;
+  }
+
+  .form-modal__close:hover {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+  }
+
+  .form-modal__form {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .form-modal__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .form-modal__field label {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .form-modal__input,
+  .form-modal__textarea {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border-detail);
+    border-radius: 10px;
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family);
+    color: var(--text-primary);
+    background: var(--bg-detail);
+    transition: border-color var(--transition-fast);
+    outline: none;
+  }
+
+  .form-modal__input::placeholder,
+  .form-modal__textarea::placeholder {
+    color: var(--text-muted);
+  }
+
+  .form-modal__input:focus,
+  .form-modal__textarea:focus {
+    border-color: var(--accent-border);
+    box-shadow: 0 0 0 3px var(--accent-subtle);
+  }
+
+  .form-modal__input--error,
+  .form-modal__textarea--error {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.02);
+  }
+
+  .form-modal__input--error:focus,
+  .form-modal__textarea--error:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  }
+
+  /* Error messages */
+  .form-modal__error {
+    display: block;
+    font-size: 12px;
+    color: #ef4444;
+    font-weight: 500;
+    line-height: 1.4;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transform: translateY(-4px);
+    transition: opacity 0.2s ease, transform 0.2s ease, max-height 0.2s ease;
+    pointer-events: none;
+  }
+
+  .form-modal__error--visible {
+    opacity: 1;
+    max-height: 40px;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .form-modal__input--readonly {
+    background: var(--accent-subtle);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+  }
+
+  .form-modal__textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .form-modal__actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: flex-end;
+    padding-top: var(--spacing-sm);
+  }
+
+  .form-modal__cancel {
+    padding: 8px 16px;
+    border: 1px solid var(--border-detail);
+    border-radius: 10px;
+    background: var(--bg-detail);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+  }
+
+  .form-modal__cancel:hover {
+    background: var(--bg-hover);
+  }
+
+  .form-modal__send {
+    padding: 8px 20px;
+    border: 1px solid var(--accent-hover);
+    border-radius: 10px;
+    background: var(--bg-compose-btn);
+    color: #fff;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.15);
+    transition: all 0.15s ease;
+  }
+
+  .form-modal__send:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+
+  .form-modal__send:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Toast notification */
+  .toast {
+    position: fixed;
+    top: calc(var(--toolbar-height) + var(--spacing-lg));
+    left: 50%;
+    transform: translateX(-50%) translateY(-120%);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    box-shadow: var(--shadow-md);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-primary);
+    z-index: 1100;
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .toast svg {
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .toast--visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+</style>

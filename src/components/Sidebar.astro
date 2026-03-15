@@ -65,10 +65,7 @@ const feedFolders = [
   <!-- Mobile header -->
   <div class="sidebar__header">
     <div class="sidebar__header-brand">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/>
-        <path d="M2 7l10 6 10-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
+      <span class="sidebar__header-icon">📧</span>
       <span>mailto.setyawanadi</span>
     </div>
     <button class="sidebar__close" id="sidebar-close" aria-label="Close sidebar">
@@ -112,6 +109,7 @@ const feedFolders = [
                 { "sidebar__item--active": currentFolder === folder.id },
               ]}
               data-folder={folder.id}
+              data-sidebar-link
             >
               <span class="sidebar__icon" set:html={getIcon(folder.icon)} />
               <span class="sidebar__label">{folder.label}</span>
@@ -140,6 +138,7 @@ const feedFolders = [
                 { "sidebar__item--active": currentFolder === folder.id },
               ]}
               data-folder={folder.id}
+              data-sidebar-link
             >
               <span class="sidebar__icon" set:html={getIcon(folder.icon)} />
               <span class="sidebar__label">{folder.label}</span>
@@ -177,8 +176,12 @@ const feedFolders = [
   .sidebar__header-brand {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
-    color: var(--accent);
+    gap: 2px;
+  }
+
+  .sidebar__header-icon {
+    font-size: 20px;
+    line-height: 1;
   }
 
   .sidebar__header-brand span {
@@ -211,7 +214,7 @@ const feedFolders = [
     padding: 10px var(--spacing-md);
     background: var(--bg-compose-btn);
     color: #fff;
-    border: 1px solid #1e70bf;
+    border: 1px solid var(--accent-hover);
     border-radius: var(--radius-md);
     font-size: var(--font-size-base);
     font-weight: 500;
@@ -278,7 +281,7 @@ const feedFolders = [
   }
 
   .sidebar__item--active {
-    background: #e0f2fe;
+    background: var(--accent-subtle);
     color: var(--accent);
     border-left-color: var(--accent);
     font-weight: 500;
@@ -317,15 +320,6 @@ const feedFolders = [
     text-align: center;
   }
 
-  /* ===== DARK MODE ===== */
-  :global([data-theme="dark"]) .sidebar__item--active {
-    background: rgba(56, 189, 248, 0.1);
-  }
-
-  :global([data-theme="dark"]) .sidebar__compose {
-    border-color: #1d4ed8;
-  }
-
   @media (max-width: 768px) {
     .sidebar {
       position: fixed;
@@ -339,11 +333,7 @@ const feedFolders = [
       width: 240px;
       min-width: 240px;
       height: auto;
-      background: #f0f7ff;
-    }
-
-    :global([data-theme="dark"]) .sidebar {
-      background: #0f172a;
+      background: var(--bg-mobile-sidebar);
     }
 
     .sidebar:global(.sidebar--open) {
@@ -359,3 +349,14 @@ const feedFolders = [
     }
   }
 </style>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    document.querySelectorAll("[data-sidebar-link]").forEach((link) => {
+      link.addEventListener("click", () => {
+        sessionStorage.removeItem("expanded");
+        document.documentElement.removeAttribute("data-expanded");
+      });
+    });
+  });
+</script>

@@ -2,20 +2,10 @@
 import { getCollection } from 'astro:content';
 import EmailLayout from '../../layouts/EmailLayout.astro';
 import MessageList from '../../components/MessageList.astro';
+import { folderMap } from '../../lib/folders';
 
 // Get folder from URL
 const { folder } = Astro.params;
-
-// Map folder names to collection names and labels
-const folderMap: Record<string, { collection: string; label: string }> = {
-  inbox: { collection: 'inbox', label: 'Inbox' },
-  sent: { collection: 'sent', label: 'Sent' },
-  drafts: { collection: 'drafts', label: 'Drafts' },
-  notes: { collection: 'notes', label: 'Notes' },
-  archive: { collection: 'archive', label: 'Archive' },
-  starred: { collection: 'starred', label: 'Starred' },
-};
-
 const folderInfo = folderMap[folder!];
 
 if (!folderInfo) {
@@ -31,13 +21,6 @@ if (folder !== 'spam' && folder !== 'trash') {
     items = [];
   }
 }
-
-// Sort: pinned first, then by date desc
-const sortedItems = items.sort((a: any, b: any) => {
-  if (a.data.pinned && !b.data.pinned) return -1;
-  if (!a.data.pinned && b.data.pinned) return 1;
-  return new Date(b.data.date).getTime() - new Date(a.data.date).getTime();
-});
 
 export function getStaticPaths() {
   return [
@@ -59,7 +42,7 @@ export function getStaticPaths() {
   description={`${folderInfo.label} — Personal site of Adi Setyawan`}
 >
   <MessageList
-    items={sortedItems.map((item: any) => ({
+    items={items.map((item: any) => ({
       slug: item.id,
       data: item.data,
     }))}
@@ -80,6 +63,11 @@ export function getStaticPaths() {
   </div>
 </EmailLayout>
 
+<script>
+  // Note: We don't clear expand state here anymore - it should persist across folder navigation
+  // The expand state is only cleared when user explicitly clicks the collapse button
+</script>
+
 <style>
   .welcome-pane {
     flex: 1;
@@ -99,27 +87,19 @@ export function getStaticPaths() {
   }
 
   .welcome-pane__icon {
-    color: #bfdbfe;
+    color: var(--border-subtle);
     margin-bottom: 4px;
   }
 
   .welcome-pane__title {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-primary);
   }
 
   .welcome-pane__text {
     font-size: var(--font-size-sm);
-    color: #94a3b8;
-  }
-
-  :global([data-theme="dark"]) .welcome-pane__icon {
-    color: #475569;
-  }
-
-  :global([data-theme="dark"]) .welcome-pane__title {
-    color: #f1f5f9;
+    color: var(--text-muted);
   }
 
   @media (max-width: 768px) {

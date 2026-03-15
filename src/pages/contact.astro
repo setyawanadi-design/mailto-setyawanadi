@@ -27,6 +27,11 @@ import EmailLayout from "../layouts/EmailLayout.astro";
         ></path>
       </svg>
       <p>Composing a new message</p>
+      <div class="typing-indicator">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
     </div>
   </section>
 
@@ -81,9 +86,9 @@ import EmailLayout from "../layouts/EmailLayout.astro";
           </a>
         </div>
 
-        <p style="margin-top: 2em; color: #6b7280;">
+        <p style="margin-top: 2em; color: var(--text-secondary);">
           Or just click the email link above — it'll open your email client with
-          my address pre-filled. Looking forward to hearing from you!
+          my address pre-filled. Looking forward to hearing from you!<span class="blink-cursor"></span>
         </p>
 
         <div class="email-signature">
@@ -129,6 +134,49 @@ import EmailLayout from "../layouts/EmailLayout.astro";
     font-size: var(--font-size-sm);
   }
 
+  .typing-indicator {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .typing-indicator span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.4;
+    animation: typingBounce 1.4s ease-in-out infinite;
+  }
+
+  .typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes typingBounce {
+    0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-4px); }
+  }
+
+  .blink-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: var(--accent);
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: cursorBlink 1s step-end infinite;
+  }
+
+  @keyframes cursorBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
   .contact-pane {
     flex: 1;
     height: 100%;
@@ -140,8 +188,8 @@ import EmailLayout from "../layouts/EmailLayout.astro";
 
   .contact-pane__header {
     padding: var(--spacing-lg) var(--spacing-xl);
-    border-bottom: 1px solid #e5e7eb;
-    background: #fafafa;
+    border-bottom: 1px solid var(--border-detail);
+    background: var(--bg-detail);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
@@ -155,17 +203,17 @@ import EmailLayout from "../layouts/EmailLayout.astro";
   }
 
   .contact-field__label {
-    color: #6b7280;
+    color: var(--text-secondary);
     font-weight: 500;
     min-width: 55px;
   }
 
   .contact-field__value {
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .contact-field__value--muted {
-    color: #9ca3af;
+    color: var(--text-muted);
     font-style: italic;
   }
 
@@ -187,11 +235,11 @@ import EmailLayout from "../layouts/EmailLayout.astro";
     align-items: center;
     gap: var(--spacing-lg);
     padding: var(--spacing-lg);
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
+    background: var(--accent-subtle);
+    border: 1px solid var(--border-detail);
     border-radius: 8px;
     text-decoration: none;
-    color: #1f2937;
+    color: var(--text-primary);
     transition:
       background 200ms ease,
       border-color 200ms ease,
@@ -199,8 +247,8 @@ import EmailLayout from "../layouts/EmailLayout.astro";
   }
 
   .contact-card:hover {
-    background: #f3f0ff;
-    border-color: #c4b5fd;
+    background: var(--bg-hover);
+    border-color: var(--accent-border);
     transform: translateY(-2px);
   }
 
@@ -211,9 +259,9 @@ import EmailLayout from "../layouts/EmailLayout.astro";
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #fff;
+    background: var(--bg-detail);
     border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-sm);
   }
 
   .contact-card__info {
@@ -229,7 +277,7 @@ import EmailLayout from "../layouts/EmailLayout.astro";
 
   .contact-card__info span {
     font-size: var(--font-size-sm);
-    color: #6b7280;
+    color: var(--text-secondary);
   }
 
   @media (max-width: 768px) {

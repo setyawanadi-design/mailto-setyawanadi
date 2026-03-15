@@ -22,21 +22,8 @@ interface Props {
 
 const { items, activeSlug, folderName, folderLabel, basePath } = Astro.props;
 
-function formatDate(date: Date): string {
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-  if (days === 0) {
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-  }
-  if (days < 7) {
-    return date.toLocaleDateString("en-US", { weekday: "short" });
-  }
+// Static fallback — always safe at build time (no relative "today" logic)
+function formatDateStatic(date: Date): string {
   return date.toLocaleDateString("en-US", {
     day: "2-digit",
     month: "2-digit",
@@ -58,43 +45,6 @@ const sortedItems = [...items].sort((a, b) => {
     <div class="msg-list__header-left">
       <h2 class="msg-list__title">{folderLabel}</h2>
       <span class="msg-list__count">{items.length} Messages</span>
-    </div>
-    <div class="msg-list__header-actions">
-      <button
-        class="msg-list__sort-btn"
-        aria-label="Sort messages"
-        title="Sort"
-      >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        >
-          <line x1="4" y1="6" x2="20" y2="6"></line>
-          <line x1="4" y1="12" x2="16" y2="12"></line>
-          <line x1="4" y1="18" x2="12" y2="18"></line>
-        </svg>
-      </button>
-      <button class="msg-list__view-btn" aria-label="Toggle view" title="View">
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        >
-          <rect x="3" y="3" width="7" height="7"></rect>
-          <rect x="14" y="3" width="7" height="7"></rect>
-          <rect x="3" y="14" width="7" height="7"></rect>
-          <rect x="14" y="14" width="7" height="7"></rect>
-        </svg>
-      </button>
     </div>
   </div>
 
@@ -150,8 +100,8 @@ const sortedItems = [...items].sort((a, b) => {
           )}
           <div class="msg-item__top">
             <span class="msg-item__subject">{item.data.title}</span>
-            <span class="msg-item__date">
-              {formatDate(new Date(item.data.date))}
+            <span class="msg-item__date" data-date={new Date(item.data.date).toISOString()}>
+              {formatDateStatic(new Date(item.data.date))}
             </span>
           </div>
           {item.data.tags && item.data.tags.length > 0 && (
@@ -173,10 +123,10 @@ const sortedItems = [...items].sort((a, b) => {
     width: var(--list-width);
     min-width: var(--list-width);
     height: 100%;
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--bg-list);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-    border-right: 1px solid #dbeafe;
+    border-right: 1px solid var(--border-subtle);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -208,31 +158,6 @@ const sortedItems = [...items].sort((a, b) => {
     color: var(--text-muted);
   }
 
-  .msg-list__header-actions {
-    display: flex;
-    gap: var(--spacing-xs);
-  }
-
-  .msg-list__sort-btn,
-  .msg-list__view-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: var(--radius-sm);
-    color: var(--text-muted);
-    transition:
-      background var(--transition-fast),
-      color var(--transition-fast);
-  }
-
-  .msg-list__sort-btn:hover,
-  .msg-list__view-btn:hover {
-    background: var(--bg-hover);
-    color: var(--text-primary);
-  }
-
   .msg-list__items {
     flex: 1;
     overflow-y: auto;
@@ -257,7 +182,7 @@ const sortedItems = [...items].sort((a, b) => {
     flex-direction: column;
     gap: 2px;
     padding: var(--spacing-md) var(--spacing-lg);
-    border-bottom: 1px solid #e0f2fe;
+    border-bottom: 1px solid var(--border-list);
     cursor: pointer;
     transition: background 0.15s ease;
     text-decoration: none;
@@ -265,24 +190,24 @@ const sortedItems = [...items].sort((a, b) => {
   }
 
   .msg-item:hover {
-    background: #eff6ff;
+    background: var(--bg-msg-hover);
   }
 
   .msg-item--active {
-    background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%) !important;
-    border-left: 5px solid #00aaff;
+    background: var(--bg-msg-active) !important;
+    border-left: 5px solid var(--border-msg-active);
     padding-left: calc(var(--spacing-lg) - 5px);
   }
 
   .msg-item--active:hover {
-    background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%) !important;
+    background: var(--bg-msg-active) !important;
   }
 
   .msg-item__pin {
     position: absolute;
     top: 6px;
     right: 8px;
-    color: #0ea5e9;
+    color: var(--accent);
     opacity: 0.7;
   }
 
@@ -297,7 +222,7 @@ const sortedItems = [...items].sort((a, b) => {
   .msg-item__subject {
     font-size: var(--font-size-sm);
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -305,7 +230,7 @@ const sortedItems = [...items].sort((a, b) => {
 
   .msg-item__date {
     font-size: var(--font-size-xs);
-    color: #64748b;
+    color: var(--text-detail-secondary);
     white-space: nowrap;
     flex-shrink: 0;
   }
@@ -319,8 +244,8 @@ const sortedItems = [...items].sort((a, b) => {
   .msg-item__tag {
     font-size: 10px;
     font-weight: 600;
-    color: #3182ce;
-    background: #eff6ff;
+    color: var(--text-tag);
+    background: var(--bg-tag);
     padding: 1px 8px;
     border-radius: 999px;
     letter-spacing: 0.02em;
@@ -328,7 +253,7 @@ const sortedItems = [...items].sort((a, b) => {
 
   .msg-item__preview {
     font-size: var(--font-size-sm);
-    color: #64748b;
+    color: var(--text-detail-secondary);
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -336,46 +261,6 @@ const sortedItems = [...items].sort((a, b) => {
     -webkit-box-orient: vertical;
     line-height: 1.4;
     margin: 0;
-  }
-
-  /* ===== DARK MODE ===== */
-  :global([data-theme="dark"]) .msg-list {
-    background: rgba(30, 41, 59, 0.8);
-    border-right-color: #334155;
-  }
-
-  :global([data-theme="dark"]) .msg-item {
-    border-bottom-color: #334155;
-  }
-
-  :global([data-theme="dark"]) .msg-item:hover {
-    background: rgba(56, 189, 248, 0.06);
-  }
-
-  :global([data-theme="dark"]) .msg-item--active {
-    background: linear-gradient(180deg, rgba(56, 189, 248, 0.15) 0%, rgba(56, 189, 248, 0.08) 100%) !important;
-    border-left-color: #38bdf8;
-  }
-
-  :global([data-theme="dark"]) .msg-item--active:hover {
-    background: linear-gradient(180deg, rgba(56, 189, 248, 0.15) 0%, rgba(56, 189, 248, 0.08) 100%) !important;
-  }
-
-  :global([data-theme="dark"]) .msg-item__subject {
-    color: #f1f5f9;
-  }
-
-  :global([data-theme="dark"]) .msg-item__date {
-    color: #94a3b8;
-  }
-
-  :global([data-theme="dark"]) .msg-item__tag {
-    color: #60a5fa;
-    background: rgba(96, 165, 250, 0.1);
-  }
-
-  :global([data-theme="dark"]) .msg-item__preview {
-    color: #94a3b8;
   }
 
   @media (max-width: 768px) {
@@ -386,3 +271,68 @@ const sortedItems = [...items].sort((a, b) => {
     }
   }
 </style>
+
+<script>
+  // Toggle message list visibility based on expand state
+  function updateVisibility() {
+    const msgList = document.getElementById("message-list");
+    if (!msgList) return;
+
+    const isExpanded = document.documentElement.hasAttribute("data-expanded");
+    if (isExpanded) {
+      msgList.style.display = "none";
+    } else {
+      msgList.style.display = "";
+    }
+  }
+
+  document.addEventListener("astro:page-load", updateVisibility);
+  document.addEventListener("astro:after-swap", updateVisibility);
+
+  // Also listen for attribute changes using MutationObserver
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((m) => {
+      if (m.attributeName === "data-expanded") {
+        updateVisibility();
+      }
+    });
+  });
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-expanded"] });
+
+  // Initial check
+  updateVisibility();
+
+  // Upgrade dates to relative format on the client
+  function formatDateRelative(iso: string): string {
+    const date = new Date(iso);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    if (days === 0) {
+      return date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    }
+    if (days < 7) {
+      return date.toLocaleDateString("en-US", { weekday: "short" });
+    }
+    return date.toLocaleDateString("en-US", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  }
+
+  function upgradeDates() {
+    document.querySelectorAll<HTMLElement>(".msg-item__date[data-date]").forEach((el) => {
+      const iso = el.dataset.date;
+      if (iso) el.textContent = formatDateRelative(iso);
+    });
+  }
+
+  document.addEventListener("astro:page-load", upgradeDates);
+  upgradeDates();
+</script>

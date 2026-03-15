@@ -203,9 +203,48 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
 </article>
 
 <script>
+  // Back button slide-out — delegated, registered once
+  if (!(window as any).__backSlideRegistered) {
+    (window as any).__backSlideRegistered = true;
+    let isSliding = false;
+    document.addEventListener("click", async (e) => {
+      const backBtn = (e.target as HTMLElement).closest(".action-btn--back") as HTMLAnchorElement | null;
+      if (!backBtn || window.innerWidth > 768 || isSliding) return;
+      e.preventDefault();
+      e.stopPropagation();
+      isSliding = true;
+      const pane = document.getElementById("reading-pane");
+      const href = backBtn.href;
+      if (pane) {
+        const anim = pane.animate(
+          [
+            { transform: "translateX(0)" },
+            { transform: "translateX(100%)" },
+          ],
+          { duration: 250, easing: "cubic-bezier(0.4, 0, 1, 1)", fill: "forwards" }
+        );
+        await anim.finished;
+      }
+      isSliding = false;
+      const { navigate } = await import("astro:transitions/client");
+      navigate(href);
+    }, true);
+  }
+
   document.addEventListener("astro:page-load", () => {
-    // Apply nav slide direction on mobile (body only, not action bar)
+    // Slide in the whole reading pane on mobile
     const readingPane = document.getElementById("reading-pane");
+    if (readingPane && window.innerWidth <= 768) {
+      readingPane.animate(
+        [
+          { transform: "translateX(100%)" },
+          { transform: "translateX(0)" },
+        ],
+        { duration: 250, easing: "cubic-bezier(0, 0, 0.2, 1)", fill: "forwards" }
+      );
+    }
+
+    // Apply nav slide direction on desktop (body only, not action bar)
     const paneBody = readingPane?.querySelector(".reading-pane__body") as HTMLElement | null;
     const navDir = sessionStorage.getItem("nav-direction");
     if (navDir && paneBody) {
@@ -579,11 +618,6 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
       height: auto;
     }
 
-    /* Default: body slides from right on mobile (entering from message list) */
-    .reading-pane__body {
-      animation: slideFromRight 0.25s ease-out;
-    }
-
     .action-btn--back {
       display: flex;
     }
@@ -595,5 +629,6 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
     .action-btn--expand {
       display: none;
     }
+
   }
 </style>

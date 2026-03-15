@@ -87,33 +87,35 @@ const sortedItems = [...items].sort((a, b) => {
           ]}
           data-slug={item.slug}
         >
-          {item.data.pinned && (
-            <span class="msg-item__pin" title="Pinned">
-              <svg
-                width="10"
-                height="10"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                stroke="currentColor"
-                stroke-width="1"
-              >
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-              </svg>
-            </span>
-          )}
           <div class="msg-item__top">
             <span class="msg-item__subject">{item.data.title}</span>
+            {item.data.pinned && (
+              <span class="msg-item__pin" title="Pinned">
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  stroke-width="1"
+                >
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+              </span>
+            )}
+          </div>
+          <div class="msg-item__meta">
+            {item.data.tags && item.data.tags.length > 0 && (
+              <div class="msg-item__tags">
+                {item.data.tags.map((tag: string) => (
+                  <span class="msg-item__tag">{tag}</span>
+                ))}
+              </div>
+            )}
             <span class="msg-item__date" data-date={new Date(item.data.date).toISOString()}>
               {formatDateStatic(new Date(item.data.date))}
             </span>
           </div>
-          {item.data.tags && item.data.tags.length > 0 && (
-            <div class="msg-item__tags">
-              {item.data.tags.map((tag: string) => (
-                <span class="msg-item__tag">{tag}</span>
-              ))}
-            </div>
-          )}
           <p class="msg-item__preview">{item.data.preview}</p>
         </a>
       ))
@@ -213,11 +215,11 @@ const sortedItems = [...items].sort((a, b) => {
   }
 
   .msg-item__pin {
-    position: absolute;
-    top: 6px;
-    right: 8px;
     color: var(--accent);
     opacity: 0.7;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
   }
 
   .msg-item__top {
@@ -226,6 +228,14 @@ const sortedItems = [...items].sort((a, b) => {
     align-items: baseline;
     gap: var(--spacing-sm);
     margin-bottom: 1px;
+  }
+
+  .msg-item__meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: nowrap;
   }
 
   .msg-item__subject {
@@ -248,6 +258,8 @@ const sortedItems = [...items].sort((a, b) => {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
+    min-width: 0;
+    overflow: hidden;
   }
 
   .msg-item__tag {

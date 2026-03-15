@@ -3,26 +3,25 @@ title: "Welcome to my site!"
 from: "setyawanadi"
 fromEmail: "setyawanadi@hotmail.com"
 date: 2026-03-12
-preview: "Hey! Welcome to my personal corner of the internet. This site is built to look and feel like an email client..."
+preview: "welcome! this is my personal corner of the internet."
 pinned: true
-tags: ["personal", "intro"]
+tags: ["info"]
 ---
 
-Hey there!
+welcome!
 
-Welcome to my personal corner of the internet. I'm **Adi Setyawan** — a creative professional who's passionate about operations, field team management, and making things run smoothly.
+this is my personal corner of the internet.
 
-This site is a little different from your typical portfolio. I built it to look and feel like your email client — because in today's world, email is where the magic happens. Job offers, project updates, creative briefs — it all starts with an email.
+## how to navigate
 
-## How to navigate
+just think of it like your inbox:
 
-Think of this site like your inbox:
+- **Inbox :** my latest thoughts and posts
+- **Sent :** work i've shipped out into the world
+- **Drafts :** things i'm currently working on
+- **Notes :** public notes, about me, stuff like that
+- **Archive :** older projects and past work
+- **Starred :** featured and pinned posts
+- **Logs :** short updates, what i'm up to, the "now" stuff
 
-- **Inbox** — You're here! This is where you'll find my latest thoughts, blog posts, and updates
-- **Sent** — My projects and work I've shipped out into the world
-- **Drafts** — Things I'm currently working on
-- **Notes** — Learn more about me
-- **Archive** — Older projects and past work
-- **Starred** — My featured and pinned content
-
-Feel free to click around and explore. And if you'd like to reach out, hit that **"Send Message"** button!
+hit the **"Send Message"** button if you want to reach out.

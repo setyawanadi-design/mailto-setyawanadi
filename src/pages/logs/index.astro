@@ -72,12 +72,6 @@ const renderedItems = await Promise.all(
                 <Content />
               </div>
 
-              {item.data.image && (
-                <div class="log-entry__image">
-                  <img src={item.data.image} alt={item.data.imageAlt || ''} loading="lazy" />
-                </div>
-              )}
-
               <div class="log-entry__actions">
                 <button
                   class="log-action-btn log-reply-btn"
@@ -513,18 +507,6 @@ const renderedItems = await Promise.all(
     color: var(--text-secondary);
     line-height: 1.6;
     font-size: var(--font-size-base);
-  }
-
-  .log-entry__image {
-    margin-top: var(--spacing-md);
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  .log-entry__image img {
-    width: 100%;
-    display: block;
-    border-radius: 12px;
   }
 
   .log-entry__actions {

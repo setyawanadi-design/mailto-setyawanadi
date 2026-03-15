@@ -20,7 +20,7 @@ const {
   ogImage,
 } = Astro.props;
 
-const pageTitle = `${currentFolder.charAt(0).toUpperCase() + currentFolder.slice(1)} — ${title}`;
+const pageTitle = currentFolder ? `${title}/${currentFolder}` : title;
 
 // Ensure og:image is always an absolute URL for social scrapers
 const absoluteOgImage = ogImage

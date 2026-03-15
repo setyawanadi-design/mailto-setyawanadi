@@ -50,8 +50,6 @@ const starred = defineCollection({
 const logSchema = z.object({
   title: z.string().default(''),
   date: z.coerce.date(),
-  image: z.string().optional(),
-  imageAlt: z.string().default(''),
 });
 
 const logs = defineCollection({

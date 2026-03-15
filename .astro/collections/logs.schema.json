@@ -10,21 +10,13 @@
       "type": "string",
       "format": "date-time"
     },
-    "image": {
-      "type": "string"
-    },
-    "imageAlt": {
-      "default": "",
-      "type": "string"
-    },
     "$schema": {
       "type": "string"
     }
   },
   "required": [
     "title",
-    "date",
-    "imageAlt"
+    "date"
   ],
   "additionalProperties": false
 }

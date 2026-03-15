@@ -25,13 +25,17 @@ const formattedDate = date.toLocaleDateString('en-US', {
 const rawBody = item.body || '';
 const snippet = rawBody.replace(/[#*_`\[\]()>-]/g, '').trim().slice(0, 160);
 const description = snippet || title;
+
+// Extract first image from markdown body for og:image
+const imageMatch = rawBody.match(/!\[.*?\]\((.*?)\)/);
+const bodyImage = imageMatch ? imageMatch[1] : undefined;
 ---
 
 <EmailLayout
   title="setyawanadi"
   currentFolder="logs"
   description={description}
-  ogImage={item.data.image || undefined}
+  ogImage={bodyImage}
 >
   <div class="log-single">
     <article class="log-single__card">
@@ -41,12 +45,6 @@ const description = snippet || title;
       <div class="log-single__body email-body">
         <Content />
       </div>
-
-      {item.data.image && (
-        <div class="log-single__image">
-          <img src={item.data.image} alt={item.data.imageAlt || ''} loading="lazy" />
-        </div>
-      )}
     </article>
 
     <a class="log-single__back" href="/logs">
@@ -89,18 +87,6 @@ const description = snippet || title;
     color: var(--text-secondary);
     line-height: 1.6;
     font-size: var(--font-size-base);
-  }
-
-  .log-single__image {
-    margin-top: var(--spacing-md);
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  .log-single__image img {
-    width: 100%;
-    display: block;
-    border-radius: 12px;
   }
 
   .log-single__back {

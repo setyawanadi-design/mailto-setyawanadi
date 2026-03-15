@@ -18,6 +18,9 @@
     "preview": {
       "type": "string"
     },
+    "image": {
+      "type": "string"
+    },
     "pinned": {
       "default": false,
       "type": "boolean"

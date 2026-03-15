@@ -7,6 +7,7 @@ const emailSchema = z.object({
   fromEmail: z.string(),
   date: z.coerce.date(),
   preview: z.string(),
+  image: z.string().optional(),
   pinned: z.boolean().default(false),
   tags: z.array(z.string()).default([]),
   attachments: z.array(z.object({

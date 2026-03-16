@@ -557,4 +557,8 @@ img {
     overflow: auto;
     height: auto;
   }
+
+  .email-signature__links a {
+    font-size: 0.625rem; /* 10px */
+  }
 }

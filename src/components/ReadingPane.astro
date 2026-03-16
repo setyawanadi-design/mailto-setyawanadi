@@ -217,13 +217,11 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
       const href = backBtn.href;
       if (pane) {
         const anim = pane.animate(
-          [
-            { transform: "translateX(0)" },
-            { transform: "translateX(100%)" },
-          ],
-          { duration: 250, easing: "cubic-bezier(0.4, 0, 1, 1)", fill: "forwards" }
+          [{ transform: "translateX(0)" }, { transform: "translateX(100%)" }],
+          { duration: 250, easing: "cubic-bezier(0.4, 0, 1, 1)" }
         );
         await anim.finished;
+        pane.style.transform = "translateX(100%)";
       }
       isSliding = false;
       const { navigate } = await import("astro:transitions/client");
@@ -231,29 +229,38 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
     }, true);
   }
 
-  document.addEventListener("astro:page-load", () => {
-    // Slide in the whole reading pane on mobile
+  // Entrance animations — use astro:after-swap (fires immediately when new DOM is in place)
+  document.addEventListener("astro:after-swap", () => {
     const readingPane = document.getElementById("reading-pane");
-    if (readingPane && window.innerWidth <= 768) {
+    const isMobile = window.innerWidth <= 768;
+    const navDir = sessionStorage.getItem("nav-direction");
+
+    // Mobile: slide in the whole pane only on first open (no nav direction)
+    if (readingPane && isMobile && !navDir) {
       readingPane.animate(
-        [
-          { transform: "translateX(100%)" },
-          { transform: "translateX(0)" },
-        ],
-        { duration: 250, easing: "cubic-bezier(0, 0, 0.2, 1)", fill: "forwards" }
+        [{ transform: "translateX(100%)" }, { transform: "translateX(0)" }],
+        { duration: 250, easing: "cubic-bezier(0, 0, 0.2, 1)" }
       );
     }
 
-    // Apply nav slide direction on desktop (body only, not action bar)
-    const paneBody = readingPane?.querySelector(".reading-pane__body") as HTMLElement | null;
-    const navDir = sessionStorage.getItem("nav-direction");
-    if (navDir && paneBody) {
-      paneBody.classList.remove("slide-from-right", "slide-from-left");
-      paneBody.classList.add(navDir === "prev" ? "slide-from-left" : "slide-from-right");
-      sessionStorage.removeItem("nav-direction");
+    // Slide in body content for prev/next navigation (both mobile and desktop)
+    if (readingPane && navDir) {
+      const paneBody = readingPane.querySelector(".reading-pane__body") as HTMLElement | null;
+      if (paneBody) {
+        const enterX = navDir === "prev" ? "-40%" : "40%";
+        paneBody.animate(
+          [{ transform: `translateX(${enterX})`, opacity: "0" }, { transform: "translateX(0)", opacity: "1" }],
+          { duration: 250, easing: "cubic-bezier(0, 0, 0.2, 1)" }
+        );
+      }
     }
 
-    // Store direction when clicking prev/next arrows
+    // Clear nav direction after use
+    if (navDir) sessionStorage.removeItem("nav-direction");
+  });
+
+  document.addEventListener("astro:page-load", () => {
+    // Store direction when clicking prev/next arrows — let links navigate naturally (no interception)
     document.querySelectorAll(".action-btn--nav").forEach((btn) => {
       btn.addEventListener("click", () => {
         const label = btn.getAttribute("aria-label");
@@ -466,23 +473,9 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
     padding: var(--spacing-xl);
   }
 
-  /* Slide animations for prev/next navigation */
-  .reading-pane__body.slide-from-right {
-    animation: slideFromRight 0.25s ease-out;
-  }
-
-  .reading-pane__body.slide-from-left {
-    animation: slideFromLeft 0.25s ease-out;
-  }
-
-  @keyframes slideFromRight {
-    from { transform: translateX(40%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-
-  @keyframes slideFromLeft {
-    from { transform: translateX(-40%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+  /* Ensure body clips animated content during slide transitions */
+  .reading-pane__body {
+    overflow-x: hidden;
   }
 
   /* ===== POST META ===== */

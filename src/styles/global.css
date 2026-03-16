@@ -23,7 +23,7 @@
   --text-detail: #0f172a;
   --text-detail-secondary: #64748b;
   --text-accent: #0369a1;
-  --text-link: #0284c7;
+  --text-link: #0270a9;
 
   /* Badge */
   --badge-bg: #0ea5e9;
@@ -114,7 +114,7 @@
   --bg-msg-hover: #eff6ff;
   --bg-msg-active: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%);
   --border-msg-active: #00aaff;
-  --text-tag: #3182ce;
+  --text-tag: #1e5a9e;
   --bg-tag: #eff6ff;
 
   /* Mobile sidebar */

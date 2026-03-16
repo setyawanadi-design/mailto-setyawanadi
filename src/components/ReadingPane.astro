@@ -96,11 +96,11 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
           <span class="action-btn__kbd">K</span>
         </a>
       ) : (
-        <span class="action-btn action-btn--nav action-btn--disabled" aria-label="Previous" aria-disabled="true">
+        <button class="action-btn action-btn--nav action-btn--disabled" aria-label="Previous" disabled>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M15 19l-7-7 7-7"></path>
           </svg>
-        </span>
+        </button>
       )}
       {nextUrl ? (
         <a href={nextUrl} class="action-btn action-btn--nav" aria-label="Next">
@@ -110,11 +110,11 @@ const formattedDate = new Date(date).toLocaleDateString("en-US", {
           <span class="action-btn__kbd">J</span>
         </a>
       ) : (
-        <span class="action-btn action-btn--nav action-btn--disabled" aria-label="Next" aria-disabled="true">
+        <button class="action-btn action-btn--nav action-btn--disabled" aria-label="Next" disabled>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 5l7 7-7 7"></path>
           </svg>
-        </span>
+        </button>
       )}
     </div>
   </header>

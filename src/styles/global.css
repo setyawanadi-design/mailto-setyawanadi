@@ -547,6 +547,10 @@ img {
   :root {
     --sidebar-width: 0px;
     --list-width: 100%;
+    --font-size-xs: 0.8125rem;    /* 13px (was 11px) */
+    --font-size-sm: 0.875rem;     /* 14px (was 12px) */
+    --font-size-base: 0.9375rem;  /* 15px (was 13px) */
+    --font-size-md: 1rem;         /* 16px (was 14px) */
   }
 
   body {

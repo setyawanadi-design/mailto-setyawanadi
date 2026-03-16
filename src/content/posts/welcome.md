@@ -6,9 +6,7 @@ pinned: true
 tags: ["info"]
 ---
 
-welcome!
-
-this is my personal corner of the internet.
+Welcome! this is my personal corner of the internet. My thoughts on coffee, bits of life, and everything around me.
 
 ## how to navigate
 

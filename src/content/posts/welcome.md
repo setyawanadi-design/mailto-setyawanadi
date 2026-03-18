@@ -1,9 +1,10 @@
 ---
-title: "Welcome to my site!"
-date: 2026-03-12
+title: Welcome to my site!
+date: 2026-03-19T05:48:00
 category: inbox
 pinned: true
-tags: ["info"]
+tags:
+  - info
 ---
 
 Welcome! this is my personal corner of the internet. My thoughts on coffee, bits of life, and everything around me.
@@ -13,8 +14,8 @@ Welcome! this is my personal corner of the internet. My thoughts on coffee, bits
 just think of it like your inbox:
 
 - **Inbox :** my latest thoughts and posts
-- **Sent :** work i've shipped out into the world
 - **Drafts :** things i'm currently working on
+- **Sent :** work i've shipped out into the world
 - **Notes :** public notes, about me, stuff like that
 - **Archive :** older projects and past work
 - **Starred :** featured and pinned posts

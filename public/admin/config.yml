@@ -45,8 +45,7 @@ collections:
     label: Logs
     folder: src/content/logs
     create: true
-    slug: "{{slug}}"
+    slug: "{{year}}-{{month}}-{{day}}-{{hour}}-{{minute}}"
     fields:
-      - { label: Title, name: title, widget: string, required: false }
       - { label: Date, name: date, widget: datetime }
       - { label: Body, name: body, widget: markdown }

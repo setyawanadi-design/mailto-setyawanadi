@@ -13,7 +13,6 @@ export async function getStaticPaths() {
 const { item } = Astro.props;
 const { Content } = await render(item);
 
-const title = item.data.title || 'Log';
 const date = new Date(item.data.date);
 const formattedDate = date.toLocaleDateString('en-US', {
   month: 'short',
@@ -24,7 +23,7 @@ const formattedDate = date.toLocaleDateString('en-US', {
 // Build a plain-text snippet for OG description (strip markdown)
 const rawBody = item.body || '';
 const snippet = rawBody.replace(/[#*_`\[\]()>-]/g, '').trim().slice(0, 160);
-const description = snippet || title;
+const description = snippet || 'Log';
 
 // Extract first image from markdown body for og:image
 const imageMatch = rawBody.match(/!\[.*?\]\((.*?)\)/);
@@ -32,7 +31,7 @@ const bodyImage = imageMatch ? imageMatch[1] : undefined;
 ---
 
 <EmailLayout
-  title="setyawanadi"
+  title={`mailto:setyawanadi ${formattedDate}`}
   currentFolder="logs"
   description={description}
   ogImage={bodyImage}
@@ -40,8 +39,6 @@ const bodyImage = imageMatch ? imageMatch[1] : undefined;
   <div class="log-single">
     <article class="log-single__card">
       <span class="log-single__date">{formattedDate}</span>
-      {title && <h1 class="log-single__title">{title}</h1>}
-
       <div class="log-single__body email-body">
         <Content />
       </div>
@@ -74,13 +71,6 @@ const bodyImage = imageMatch ? imageMatch[1] : undefined;
     font-size: var(--font-size-xs);
     color: var(--text-muted);
     display: block;
-  }
-
-  .log-single__title {
-    font-size: var(--font-size-2xl);
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0 0 var(--spacing-sm);
   }
 
   .log-single__body {

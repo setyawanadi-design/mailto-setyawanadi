@@ -21,7 +21,6 @@ const posts = defineCollection({
 });
 
 const logSchema = z.object({
-  title: z.string().default(''),
   date: z.coerce.date(),
 });
 

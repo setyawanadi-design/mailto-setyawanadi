@@ -1,4 +1,6 @@
 ---
+import { sortMessages } from "../lib/folders";
+
 interface MessageEntry {
   slug: string;
   data: {
@@ -30,12 +32,7 @@ function formatDateStatic(date: Date): string {
   });
 }
 
-const sortedItems = [...items].sort((a, b) => {
-  // pinned first, then by date desc
-  if (a.data.pinned && !b.data.pinned) return -1;
-  if (!a.data.pinned && b.data.pinned) return 1;
-  return new Date(b.data.date).getTime() - new Date(a.data.date).getTime();
-});
+const sortedItems = sortMessages(items as Parameters<typeof sortMessages>[0]);
 ---
 
 <section class="msg-list" id="message-list">
